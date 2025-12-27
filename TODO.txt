@@ -1,0 +1,1 @@
+Why "wire" for input or output?

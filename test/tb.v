@@ -35,4 +35,21 @@ module tb ();
       .rst_n  (rst_n)     // not reset
   );
 
+  // wire up the signals of input_selector
+  reg input_selector_in0;      
+  reg input_selector_in1;     
+  reg input_selector_testmode; 
+  wire input_selector_out;     
+  wire input_selector_in0selected;
+
+  tt_um_hoene_input_selector user_input_selector(
+      .in0  (input_selector_in0),    
+      .in1  (input_selector_in1),    
+      .testmode  (input_selector_testmode),    
+      .clk    (clk),      // clock
+      .rst_n  (rst_n),     // not reset
+      ._out (input_selector_out),    
+      ._in0selected (input_selector_in0selected)
+  );
+
 endmodule
