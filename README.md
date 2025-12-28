@@ -1,5 +1,9 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
+# Notes
+
+iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DSIM -Isrc -f sim_build/gl/cmds.f lsihp-sg13g2/libs.ref/sg13g2_io/verilog/sg13g2_io.v /home/runner/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/gate_level_netlist.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/tb.v
+
 # Tiny Tapeout Verilog Project Template
 
 - [Read the documentation for project](docs/info.md)

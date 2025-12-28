@@ -9,12 +9,12 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Explain how your project works
+It is a digital LED circuit.
 
 ## How to test
 
-Explain how to use your project
+First, run the software tests. More hardware plans will be added later.
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+Add a reset source, a clock source, and a RGB LEDs with current of 4mA for each color.

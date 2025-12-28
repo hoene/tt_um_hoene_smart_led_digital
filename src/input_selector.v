@@ -11,41 +11,37 @@
 // 2) Overwriting the decision of 1), if the test mode is selected, then the decision of 1) is swapped.
 
 module tt_um_hoene_input_selector (
-    input wire in0,          // first input 
-    input in1,          // second input
-    input rst_n,        // device reset
-    input clk,          // global clock
-    input testmode,     // high if the other input shall be chosen regardless
-    output _out,         // output signal
-    output _in0selected  //  high if in0 is selected, otherwise in1 is selected    
+    input      in0,         // first input
+    input      in1,         // second input
+    input      rst_n,       // device reset
+    input      clk,         // global clock
+    input      testmode,    // high if the other input shall be chosen regardless
+    output reg out,         // output signal
+    output reg in0selected  //  high if in0 is selected, otherwise in1 is selected
 );
 
-reg [5:0] counter;
-reg last_in0;
-reg out;
-reg in0selected;
-assign _out = out;
-assign _in0selected = in0selected;
+  reg [5:0] counter;
+  reg last_in0;
 
-always @(posedge clk) begin
+  always @(posedge clk) begin
     if (!rst_n) begin
+      in0selected <= 0;
+      last_in0 <= 0;
+      counter <= 0;
+      out <= 0;
+    end else begin
+      last_in0 <= in0;
+      if (last_in0 == 0 && in0 == 1 && counter != 63) begin
+        counter <= counter + 1;
+      end
+      if ((counter == 63) ^ ^testmode) begin
+        in0selected <= 1;
+        out <= in0;
+      end else begin
         in0selected <= 0;
-        last_in0 <= 0;
-        counter <= 0;
-        out <= 0;
-    end else begin   
-        last_in0 <= in0;
-        if (last_in0 == 0 && in0 == 1 && counter != 63) begin
-            counter <= counter + 1;
-        end
-        if ((counter == 63) ^^ testmode) begin
-            in0selected <= 1;
-            out <= in0;
-        end else begin
-            in0selected <= 0;
-            out <= in1;
-        end
+        out <= in1;
+      end
     end
-end
+  end
 
 endmodule

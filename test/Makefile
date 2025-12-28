@@ -6,7 +6,7 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v input_selector.v
+PROJECT_SOURCES = project.v
 
 ifneq ($(GATES),yes)
 
@@ -37,7 +37,7 @@ VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
 # List test modules to run, separated by commas and without the .py suffix:
-COCOTB_TEST_MODULES = test,test_input_selector
+COCOTB_TEST_MODULES = test,test_input_selector,test_low_pass_filter,test_manchester_decoder_init,test_manchester_decoder_running
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim
