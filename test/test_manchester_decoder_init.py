@@ -29,6 +29,7 @@ async def test_manchester_decoder_init(dut):
         assert dut.manchester_decoder_out_clk.value == 0
         assert dut.manchester_decoder_out_data.value == 0
         assert dut.manchester_decoder_out_error.value == 1
+        assert dut.manchester_decoder_out_pulsewidth.value == 24
 
         # start
         dut._log.info("first pulse %d", pulsewidth)
@@ -51,11 +52,14 @@ async def test_manchester_decoder_init(dut):
             assert dut.manchester_decoder_out_clk.value == 0
             assert dut.manchester_decoder_out_data.value == 0
             assert dut.manchester_decoder_out_error.value == 1
+            assert dut.manchester_decoder_out_pulsewidth.value == 24
         elif pulsewidth <= BIT_LENGTH * 1.5:
             # too short initial pulse -> remain in error state
             assert dut.manchester_decoder_out_clk.value == 1
             assert dut.manchester_decoder_out_data.value == 1
             assert dut.manchester_decoder_out_error.value == 0
+            assert dut.manchester_decoder_out_pulsewidth.value == pulsewidth - 1
+
         else:
             # too short initial pulse -> remain in error state
             assert dut.manchester_decoder_out_clk.value == 0

@@ -71,6 +71,7 @@ module tb ();
   wire manchester_decoder_out_data;
   wire manchester_decoder_out_clk;
   wire manchester_decoder_out_error;
+  wire [5:0] manchester_decoder_out_pulsewidth;
 
   tt_um_hoene_manchester_decoder user_manchester_decoder (
       .in       (manchester_decoder_in),
@@ -78,7 +79,8 @@ module tb ();
       .rst_n    (rst_n),                        // not reset
       .out_data (manchester_decoder_out_data),
       .out_clk  (manchester_decoder_out_clk),
-      .out_error(manchester_decoder_out_error)
+      .out_error(manchester_decoder_out_error),
+      .out_pulsewidth(manchester_decoder_out_pulsewidth)
   );
 
 endmodule
