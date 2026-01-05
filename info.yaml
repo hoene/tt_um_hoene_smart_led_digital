@@ -21,6 +21,8 @@ project:
     - "input_selector.v"
     - "low_pass_filter.v"
     - "manchester_decoder.v"
+    - "protocol_insync.v"
+    - "led_pwm.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
