@@ -16,7 +16,7 @@ async def test_input_selector(dut):
 
     for loops in range(0, 2):
         # Reset
-        dut._log.info("Reset")
+        dut._log.debug("Reset")
         dut.ena.value = 1
         dut.rst_n.value = 0
         dut.input_selector_in0.value = 0
@@ -30,7 +30,7 @@ async def test_input_selector(dut):
         assert dut.input_selector_in0selected.value == 0
 
         # start
-        dut._log.info("Starting")
+        dut._log.debug("Starting")
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 2)
 
@@ -39,7 +39,7 @@ async def test_input_selector(dut):
         assert dut.input_selector_in0selected.value == 0
 
         # check input 1
-        dut._log.info("Input 1 testing")
+        dut._log.debug("Input 1 testing")
         assert dut.input_selector_in0selected.value == 0
         for i in range(0, 4):
             dut.input_selector_in1.value = 1
@@ -50,7 +50,7 @@ async def test_input_selector(dut):
             assert dut.input_selector_out.value == 0
 
         # check testmode input 0
-        dut._log.info("Testmode Input 0")
+        dut._log.debug("Testmode Input 0")
         dut.input_selector_testmode.value = 1
         await ClockCycles(dut.clk, 2)
         assert dut.input_selector_in0selected.value == 1
@@ -65,7 +65,7 @@ async def test_input_selector(dut):
             assert dut.input_selector_out.value == 0
 
         # check testmode input 0
-        dut._log.info("Disable testmode Input 0")
+        dut._log.debug("Disable testmode Input 0")
         dut.input_selector_testmode.value = 0
         await ClockCycles(dut.clk, 2)
         assert dut.input_selector_in0selected.value == 0
@@ -91,7 +91,7 @@ async def test_input_selector(dut):
         # wait for input 0 to be come selected
         assert dut.input_selector_out.value == 0
 
-        dut._log.info("Testmode Input 1")
+        dut._log.debug("Testmode Input 1")
         dut.input_selector_testmode.value = 1
         await ClockCycles(dut.clk, 2)
         assert dut.input_selector_in0selected.value == 0

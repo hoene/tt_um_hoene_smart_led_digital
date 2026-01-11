@@ -7,8 +7,8 @@ from cocotb.triggers import ClockCycles
 
 
 @cocotb.test()
-async def test_protocol_insync(dut):
-    dut._log.info("protocol insync start")
+async def test_protocol_select(dut):
+    dut._log.info("protocol select start")
 
     # Set the clock period to 10 us (100 KHz)
     clock = Clock(dut.clk, 10, unit="us")

@@ -16,7 +16,7 @@ async def test_low_pass_filter(dut):
 
     for loops in range(0,2):
         # Reset
-        dut._log.info("Reset")
+        dut._log.debug("Reset")
         dut.ena.value = 1
         dut.rst_n.value = 0
         dut.low_pass_filter_in.value = 0
@@ -27,7 +27,7 @@ async def test_low_pass_filter(dut):
         assert dut.low_pass_filter_out.value == 0
 
         # start
-        dut._log.info("Starting")
+        dut._log.debug("Starting")
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 2)
 
@@ -38,7 +38,7 @@ async def test_low_pass_filter(dut):
         last0 = 0
         exp = 0
         # check input 1 
-        dut._log.info("low pass filtering")
+        dut._log.debug("low pass filtering")
         for i in range(0,32):
             for b in range(0,5):
                 out = (i >> b) & 1

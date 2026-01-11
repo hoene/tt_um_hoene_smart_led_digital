@@ -15,7 +15,7 @@ module tt_um_hoene_protocol_insync (
     input rst_n,     // device reset
     input clk,       // global clock
 
-    output reg insync   // bitstream is not in sync
+    output reg insync  // bitstream is insync
 );
   reg last_in;
 
@@ -23,7 +23,7 @@ module tt_um_hoene_protocol_insync (
 
 
     if (!rst_n || in_error) begin
-      insync <= 0;
+      insync  <= 0;
       last_in <= 0;
     end else if (in_clk) begin
       last_in <= in_data;
@@ -33,7 +33,7 @@ module tt_um_hoene_protocol_insync (
         if (last_in == 1 && in_data == 1) begin
           insync <= 1;
         end
-      end       
+      end
     end
   end
 endmodule

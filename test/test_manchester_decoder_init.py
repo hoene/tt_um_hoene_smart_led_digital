@@ -18,7 +18,7 @@ async def test_manchester_decoder_init(dut):
 
     for pulsewidth in range(1, BIT_LENGTH * 2):
         # Reset
-        dut._log.info("Reset")
+        dut._log.debug("Reset")
         dut.ena.value = 1
         dut.rst_n.value = 0
         dut.manchester_decoder_in.value = 0
@@ -32,7 +32,7 @@ async def test_manchester_decoder_init(dut):
         assert dut.manchester_decoder_out_pulsewidth.value == 24
 
         # start
-        dut._log.info("first pulse %d", pulsewidth)
+        dut._log.debug("first pulse %d", pulsewidth)
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 2)
 

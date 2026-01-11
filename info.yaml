@@ -22,6 +22,8 @@ project:
     - "low_pass_filter.v"
     - "manchester_decoder.v"
     - "protocol_insync.v"
+    - "protocol_select.v"
+    - "protocol_serial2parallel.v"
     - "led_pwm.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.

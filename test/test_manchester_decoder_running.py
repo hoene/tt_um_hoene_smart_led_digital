@@ -18,7 +18,7 @@ async def test_manchester_decoder_running(dut):
 
     for loop in range(1, 3):
         # Reset
-        dut._log.info("Reset")
+        dut._log.debug("Reset")
         dut.ena.value = 1
         dut.rst_n.value = 0
         dut.manchester_decoder_in.value = 0
@@ -30,7 +30,7 @@ async def test_manchester_decoder_running(dut):
         await ClockCycles(dut.clk, 2)
 
         # first long 1 pulse
-        dut._log.info("1 long")
+        dut._log.debug("1 long")
         dut.manchester_decoder_in.value = 1
         await ClockCycles(dut.clk, BIT_LENGTH)
         dut.manchester_decoder_in.value = 0
@@ -47,7 +47,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 0
 
         # long 0 pulse
-        dut._log.info("0 long")
+        dut._log.debug("0 long")
         await ClockCycles(dut.clk, BIT_LENGTH)
         dut.manchester_decoder_in.value = 1
         await ClockCycles(dut.clk, 2)
@@ -63,7 +63,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 0
 
         # short 1 pulse
-        dut._log.info("1 short")
+        dut._log.debug("1 short")
 
         await ClockCycles(dut.clk, BIT_LENGTH >> 1)
         dut.manchester_decoder_in.value = 0
@@ -74,7 +74,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 0
 
         # short 0 pulse
-        dut._log.info("0 short")
+        dut._log.debug("0 short")
         await ClockCycles(dut.clk, BIT_LENGTH >> 1)
         dut.manchester_decoder_in.value = 1
         await ClockCycles(dut.clk, 2)
@@ -84,7 +84,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 0
 
         # too short 1 pulse
-        dut._log.info("1 spike")
+        dut._log.debug("1 spike")
         await ClockCycles(dut.clk, 2)
         dut.manchester_decoder_in.value = 0
         await ClockCycles(dut.clk, 2)
@@ -94,7 +94,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 1
 
         # long 0 pulse
-        dut._log.info("0 long")
+        dut._log.debug("0 long")
         await ClockCycles(dut.clk, BIT_LENGTH)
         dut.manchester_decoder_in.value = 1
         await ClockCycles(dut.clk, 2)
@@ -104,7 +104,7 @@ async def test_manchester_decoder_running(dut):
         assert dut.manchester_decoder_out_error.value == 0
 
         # too long 1 pulse
-        dut._log.info("1 too long")
+        dut._log.debug("1 too long")
         await ClockCycles(dut.clk, 2 * BIT_LENGTH)
         dut.manchester_decoder_in.value = 0
         await ClockCycles(dut.clk, 2)

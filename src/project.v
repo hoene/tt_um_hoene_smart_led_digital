@@ -38,7 +38,7 @@ module tt_um_hoene_firsttry (
   tt_um_hoene_input_selector all_input_selector (
       .in0        (ui_in[0]),
       .in1        (ui_in[1]),
-      .testmode   (input_selector_testmode),
+      .testmode   (protocol_test_mode),
       .clk        (clk),                        // clock
       .rst_n      (rst_n),                      // not reset
       .out        (input_selector_out),
@@ -83,6 +83,34 @@ module tt_um_hoene_firsttry (
       .insync  (protocol_insync_out)
   );
 
+  // wire up the signals of protocol insync module
+  wire protocol_pwm_set;   // forwarded clock to manachester encoder
+  wire protocol_swap_forward_bit; // swap the bit, which is forwarded
+  wire protocol_test_mode;  // test mode is selected if too many LED data
+
+
+  tt_um_hoene_protocol_select user_protocol_select (
+      .in_data (manchester_decoder_out_data),
+      .in_clk  (manchester_decoder_out_clk),
+      .in_sync (protocol_insync_out),
+      .rst_n   (rst_n),
+      .clk     (clk),
+      .in0selected  (input_selector_in0selected),
+      .pwm_set (protocol_pwm_set),
+      .swap_forward_bit (protocol_swap_forward_bit),
+      .test_mode (protocol_test_mode)
+  );
+
+    wire  [31:0] protocol_data;  // the output data of the shift register
+
+    tt_um_hoene_protocol_serial2parallel user_protocol_serial2parallel (
+      .in_data (manchester_decoder_out_data),
+      .in_clk  (manchester_decoder_out_clk),
+      .store   (protocol_pwm_set),
+      .rst_n   (rst_n),
+      .clk     (clk),
+      .output_data  (protocol_data)
+  );
 
   // wire up the signals of led PWM 
   reg [9:0] led_pwm_data_red;

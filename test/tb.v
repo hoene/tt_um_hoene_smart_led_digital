@@ -1,10 +1,11 @@
 `default_nettype none `timescale 1ns / 1ps
 `include "input_selector.v"
-`include "input_shift_register.v"
 `include "low_pass_filter.v"
 `include "manchester_decoder.v"
 `include "led_pwm.v"
 `include "protocol_insync.v"
+`include "protocol_serial2parallel.v"
+`include "protocol_select.v"
 
 /* This testbench just instantiates the module and makes some convenient wires
    that can be driven / tested by the cocotb test.py.
@@ -118,6 +119,22 @@ module tb ();
       .clk     (clk),
       .insync  (protocol_insync_out)
   );
+
+  // wire up the signals of protocol serial2parallel module
+  reg protocol_serial2parallel_data;
+  reg protocol_serial2parallel_clk;
+  reg protocol_serial2parallel_store;
+  wire [31:0] protocol_serial2parallel_out;
+
+  tt_um_hoene_protocol_serial2parallel user_protocol_serial2parallel (
+      .in_data    (protocol_serial2parallel_data),
+      .in_clk     (protocol_serial2parallel_clk),
+      .store      (protocol_serial2parallel_store),
+      .rst_n      (rst_n),
+      .clk        (clk),
+      .output_data(protocol_serial2parallel_out)
+  );
+
   /*
   wire [9:0] protocol_red;
   wire [9:0] protocol_green;
