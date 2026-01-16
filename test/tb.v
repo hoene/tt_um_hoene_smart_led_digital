@@ -5,6 +5,7 @@
 `include "led_pwm.v"
 `include "protocol_insync.v"
 `include "protocol_serial2parallel.v"
+`include "protocol_counters.v"
 `include "protocol_select.v"
 
 /* This testbench just instantiates the module and makes some convenient wires
@@ -134,6 +135,22 @@ module tb ();
       .clk        (clk),
       .output_data(protocol_serial2parallel_out)
   );
+
+  // wire up the signals of protocol counters module
+  reg protocol_counters_in_clk;
+  reg protocol_counters_in_sync;
+  wire [4:0] protocol_counters_bits;
+  wire protocol_counters_test_mode;
+
+  tt_um_hoene_protocol_counters user_protocol_counters (
+      .in_clk     (protocol_counters_in_clk),
+      .in_sync    (protocol_counters_in_sync),
+      .rst_n      (rst_n),
+      .clk        (clk),
+      .bit_counter(protocol_counters_bits),
+      .test_mode  (protocol_counters_test_mode)
+  );
+
 
   /*
   wire [9:0] protocol_red;

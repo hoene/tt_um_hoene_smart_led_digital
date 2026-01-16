@@ -22,6 +22,7 @@ project:
     - "low_pass_filter.v"
     - "manchester_decoder.v"
     - "protocol_insync.v"
+    - "protocol_counters.v"
     - "protocol_select.v"
     - "protocol_serial2parallel.v"
     - "led_pwm.v"

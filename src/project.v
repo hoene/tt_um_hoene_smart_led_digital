@@ -31,14 +31,13 @@ module tt_um_hoene_firsttry (
 
   // wire up the signals of input_selector
 
-  reg  input_selector_testmode;  // TODO
   wire input_selector_out;
   wire input_selector_in0selected;
 
   tt_um_hoene_input_selector all_input_selector (
       .in0        (ui_in[0]),
       .in1        (ui_in[1]),
-      .testmode   (protocol_test_mode),
+      .testmode   (protocol_counters_test_mode),
       .clk        (clk),                        // clock
       .rst_n      (rst_n),                      // not reset
       .out        (input_selector_out),
@@ -83,6 +82,23 @@ module tt_um_hoene_firsttry (
       .insync  (protocol_insync_out)
   );
 
+
+  // wire up the signals of protocol counters module
+  wire [4:0] protocol_counters_bits;
+  wire protocol_counters_test_mode;
+
+  tt_um_hoene_protocol_counters user_protocol_counters (
+      .in_clk  (manchester_decoder_out_clk),
+      .in_sync (protocol_insync_out),
+      .rst_n   (rst_n),
+      .clk     (clk),
+      .bit_counter  (protocol_counters_bits),
+      .test_mode  (protocol_counters_test_mode)
+  );
+
+
+
+
   // wire up the signals of protocol insync module
   wire protocol_pwm_set;   // forwarded clock to manachester encoder
   wire protocol_swap_forward_bit; // swap the bit, which is forwarded
@@ -97,8 +113,7 @@ module tt_um_hoene_firsttry (
       .clk     (clk),
       .in0selected  (input_selector_in0selected),
       .pwm_set (protocol_pwm_set),
-      .swap_forward_bit (protocol_swap_forward_bit),
-      .test_mode (protocol_test_mode)
+      .swap_forward_bit (protocol_swap_forward_bit)
   );
 
     wire  [31:0] protocol_data;  // the output data of the shift register
