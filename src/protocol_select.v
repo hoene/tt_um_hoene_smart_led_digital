@@ -16,13 +16,13 @@ module tt_um_hoene_protocol_select (
     input            in0selected,       // mode from input selector DIN or BIN
     input      [4:0] bit_counter,
     input            parity_error,      // parity enable
-    output reg       parity,            // parity calculation
-    output reg [1:0] state,             // error detected
     output reg       pwm_set,           // forwarded clock to Manchester encoder
     output reg       swap_forward_bit,  // swap the bit, which is forwarded
     output reg       error,             // error detected
-    output reg       out_clk            // forwarded clock to Manchester encoder
+    output reg [1:0] state              // 0->1->[2->]->3->0
 );
+
+
   always @(posedge clk) begin
     // reset
     if (!rst_n || !in_sync) begin
@@ -30,28 +30,11 @@ module tt_um_hoene_protocol_select (
       state <= 0;
       pwm_set <= 0;
       error <= 0;
-      parity <= 0;
-    end 
-    
-    if (!rst_n) begin
-      out_clk <= 0;
-    end else if (!in_sync) begin
-      // wait for sync but forward data anyhow
-      out_clk <= in_clk;
+    end else if (parity_error) begin
+      swap_forward_bit <= 0;
+      pwm_set <= 0;
     end else begin
-
-      // forward data only if not in error state
-      if (!error) begin
-        out_clk <= in_clk;
-      end else begin
-        out_clk <= 0;
-      end
-
-      // state machine 
-      if (error) begin
-        swap_forward_bit <= 0;
-        pwm_set <= 0;
-      end else begin
+      if (in_clk) begin
         // handle states 
         case (state)
           0: begin // receiving data, if the first bit is 1, move to next state and change the bit to zero
@@ -64,7 +47,7 @@ module tt_um_hoene_protocol_select (
             if (bit_counter == 31) begin
               swap_forward_bit <= 1;
               if (in0selected) begin
-                pwm_set <= parity == in_data;
+                pwm_set <= 1;
                 state   <= 3;
               end else begin
                 state <= 2;
@@ -81,10 +64,9 @@ module tt_um_hoene_protocol_select (
               end
             end else if (bit_counter == 31) begin
               swap_forward_bit <= 1;
-              pwm_set <= parity == in_data;
+              pwm_set <= 1;
               state <= 3;
-            end
-            begin
+            end else begin
               swap_forward_bit <= 0;
             end
           end

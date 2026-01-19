@@ -169,4 +169,31 @@ module tb ();
       .error      (protocol_parity_error)
   );
 
+  // wire up the signals of protocol parity module
+  reg protocol_select_in_data;
+  reg protocol_select_in_clk;
+  reg protocol_select_in_sync;
+  reg protocol_select_in0selected;
+  reg [4:0] protocol_select_bits;
+  reg protocol_select_parity_error;
+  wire protocol_select_pwm_set;
+  wire protocol_select_swap_forward_bit;
+  wire protocol_select_error;
+  wire [1:0] protocol_select_state;
+
+  tt_um_hoene_protocol_select user_protocol_select (
+      .in_data         (protocol_select_in_data),
+      .in_clk          (protocol_select_in_clk),
+      .in_sync         (protocol_select_in_sync),
+      .in0selected     (protocol_select_in0selected),
+      .bit_counter     (protocol_select_bits),
+      .parity_error    (protocol_select_parity_error),
+      .rst_n           (rst_n),
+      .clk             (clk),
+      .pwm_set         (protocol_select_pwm_set),
+      .swap_forward_bit(protocol_select_swap_forward_bit),
+      .error           (protocol_select_error),
+      .state           (protocol_select_state)
+  );
+
 endmodule
