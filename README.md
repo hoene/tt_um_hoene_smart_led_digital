@@ -1,9 +1,5 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Notes
-
-iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DSIM -Isrc -f sim_build/gl/cmds.f lsihp-sg13g2/libs.ref/sg13g2_io/verilog/sg13g2_io.v /home/runner/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/gate_level_netlist.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/tb.v
-
 # Architecture
 
 The architecture of the digital LED is based on a pipelined signal flow. The following modules are used
@@ -15,20 +11,20 @@ The architecture of the digital LED is based on a pipelined signal flow. The fol
 5) Bit and word counters
 
 ## Input Selector
-The first module is the "input_selector.v". At startup, is selected either the IN0 input or IN1 input based on whether DIN shows a toggling signal. The IN0 must toggle 63 times until the input is selected. This decision is only made once after reset.
-However, if the test-mode command is send, then the input is switched from DIN to BIN or vice versa.
+The first module is the "input_selector.v". At startup, is selects either the IN0 input or IN1 input based on whether Inß shows a toggling signal. The IN0 must toggle 63 times until the input is selected. This decision is only made once after reset. 
+However, if the test-mode command is send, then the input is switched from IN0 to IN1 or vice versa regardless of the internal selection.
 The algorithmic delay is one clock cylce
 
 ### Inputs and Outputs
 * IN0 (i) Data signal input from previous LED
-* INT1 (i) Data signal input from LED previous to the previous LED
+* IN1 (i) Data signal input from the penultimate LED 
 * TEST_MODE (i) True if the test_mode selected.
-* OUT (o) Data signal output
-* IN0SELECTED (o) True, if in0 is selected. Toggles with if test-mode is switched on. 
+* OUT (o) Data signal output (either from IN0 or IN1)
+* IN0SELECTED (o) True, if IN0 is selected. It toggles with if test-mode is switched on. 
 
 ## Low pass filter
 In order to avoid spikes, the low pass filter filters out spikes which have a length of one clock cycle, are removed.
-The algorithmic delay is two clock cycles
+The algorithmic delay is two clock cycles.
 
 ### Inputs and Outputs
 * IN (i) Data signal input from input_selector's OUT
@@ -115,3 +111,7 @@ The GitHub action will automatically build the ASIC files using [LibreLane](http
   - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
   - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
   - Bluesky [@tinytapeout.com](https://bsky.app/profile/tinytapeout.com)
+
+# Notes
+
+iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DSIM -Isrc -f sim_build/gl/cmds.f lsihp-sg13g2/libs.ref/sg13g2_io/verilog/sg13g2_io.v /home/runner/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/gate_level_netlist.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/tb.v

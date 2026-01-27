@@ -34,7 +34,7 @@ module tt_um_hoene_input_selector (
       if (last_in0 == 0 && in0 == 1 && counter != 63) begin
         counter <= counter + 1;
       end
-      if ((counter == 63) ^ ^testmode) begin
+      if ((counter == 63 & !testmode) || (counter != 63 & testmode)) begin
         in0selected <= 1;
         out <= in0;
       end else begin
