@@ -17,13 +17,9 @@ module tt_um_hoene_firsttry (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out[3] = 0;
-  assign uo_out[4] = 0;
-  assign uo_out[5] = 0;
-  assign uo_out[6] = 0;
-  assign uo_out[7] = 0;
-  assign uio_out = 0;
-  assign uio_oe = 0;
+  assign uo_out[7:6] = 0;
+  assign uio_out[7:6] = 0;
+  assign uio_oe = 1;
 
   // List all unused inputs to prevent warnings
   wire _unused = &{ena, clk, rst_n, 1'b0};
@@ -65,4 +61,41 @@ module tt_um_hoene_firsttry (
       .out  (low_pass_filter_out)
   );
 
+  // wire up the signals of Manchester decoder
+  wire manchester_decoder_out_data;
+  assign uo_out[3] = manchester_decoder_out_data;
+  wire manchester_decoder_out_clk;
+  assign uo_out[4] = manchester_decoder_out_clk;
+  wire manchester_decoder_out_error;
+  assign uo_out[5] = manchester_decoder_out_error;
+  wire [5:0] manchester_decoder_out_pulsewidth;
+  assign uio_out[5:0] = manchester_decoder_out_pulsewidth;
+
+  tt_um_hoene_manchester_decoder user_manchester_decoder (
+      .in            (low_pass_filter_out),
+      .clk           (clk),                               // clock
+      .rst_n         (rst_n),                             // not reset
+      .out_data      (manchester_decoder_out_data),
+      .out_clk       (manchester_decoder_out_clk),
+      .out_error     (manchester_decoder_out_error),
+      .out_pulsewidth(manchester_decoder_out_pulsewidth)
+  );
+
+
+  // wire up the signals of protocol insync module
+  wire protocol_insync_out;
+  wire protocol_insync_out_clk;
+  wire protocol_insync_out_data;
+
+  tt_um_hoene_protocol_insync user_protocol_insync (
+      .in_data (manchester_decoder_out_clk),
+      .in_clk  (manchester_decoder_out_clk),
+      .in_error(manchester_decoder_out_error),
+      .rst_n   (rst_n),
+      .clk     (clk),
+      .insync  (protocol_insync_out),
+      .out_data(protocol_insync_out_data),
+      .out_clk (protocol_insync_out_clk)
+  );
+  
 endmodule
