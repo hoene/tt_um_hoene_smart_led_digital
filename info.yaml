@@ -24,6 +24,7 @@ project:
     - "protocol_insync.v"
     - "protocol_counters.v"
     - "protocol_select.v"
+    - "protocol_parity.v"
     - "protocol_serial2parallel.v"
     - "led_pwm.v"
 

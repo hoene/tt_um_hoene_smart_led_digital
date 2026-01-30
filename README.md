@@ -9,8 +9,12 @@ The architecture of the digital LED is based on a pipelined signal flow. The fol
 3) Manchester decoder
 4) Frame Detector Insync
 5) Bit and word counters
+6) Parity Detection
+7) Selector
+8) Pulse Width Modulator
+9) Manchester encoder
 
-## Input Selector
+## 1. Input Selector
 The first module is the "input_selector.v". At startup, is selects either the IN0 input or IN1 input based on whether Inß shows a toggling signal. The IN0 must toggle 63 times until the input is selected. This decision is only made once after reset. 
 However, if the test-mode command is send, then the input is switched from IN0 to IN1 or vice versa regardless of the internal selection.
 If IN1 has toggle 255 times, then the input selector does not select IN0 anymore but remains with it IN1 selection.
@@ -31,7 +35,7 @@ The algorithmic delay is two clock cycles.
 * IN (i) Data signal input from input_selector's OUT
 * OUT (o) Low-pass filtered data signal output
 
-## A Manchester decoder
+## 2. A Manchester decoder
 The input signal is decoded according to the Manchester coding. Both the data signal and the clock signal are reconstructed. If the input signal looks strange or is missing , this is reported. We assume that the frequency of the input is about 24 times less than the internal clock signal. However, very data bit, the real length of the data is measured and reported.
 The clock tolerance ranges from -25% faster to +50% slower than the one given by the clock frequency divided by 24.
 The algorithmic delay is one clock cycle.
@@ -44,7 +48,7 @@ If the decoder is in error state, then a long impulse is needed to reset it to g
 * OUT_ERROR (o) the manchester decoding is not according to definition. It remain in error state till a good long bit is detected (e.g., a 10 bit sequences) 
 * OUT_PULSEWIDTH (o) the 6 bit length of the last bit. 
 
-## Synchronizing the beginning of a frame
+## 3. Synchronizing the beginning of a frame
 Based on the output of the Manchester decoder, the frame start is detected. The first byte of a frame must start with two ones in row (two short pulses). Before that, alternating 1 or 0 are expected (long pulses).
 It outputs a signal "insync" to indicate that the frame start has been detected and that the following data contains valid LED data.
 The algorithmic delay is one cycle.
@@ -57,7 +61,7 @@ The algorithmic delay is one cycle.
 * OUT_DATA (o) Valid data within a frame
 * OUT_CLK (o) Valid clock within a frame
 
-## Counting the bits of LED data and the LEDs
+## 4. Counting the bits of LED data and the LEDs
 The next modules counts bits of a LED data and the number of LEDs.
 The bits are used to control the next stages. If the number of LEDs reaches 4095, then the test mode is switched on.
 This block has an algorithmic delay of one clock cycle.
@@ -71,6 +75,16 @@ This block has an algorithmic delay of one clock cycle.
 * OUT_DATA (o) data within a frame delayed by one cycle
 * OUT_CLK (o) clock within a frame delayed by one cycle
 
+## 6. Calculating the parity of a word
+It calculate the parity of the first 31 bits and compares it with the last bit.
+
+### Inputs and Output
+* IN_DATA (i) Valid data within a frame from insync
+* IN_CLK (i) Valid clock within a frame from insync
+* INSYNC (i) if false, sets the counter back to zero, from the insync module 
+* BIT_COUNTER (i) counting the 32 bits
+* TEST_MODE (o) 4095 LEDs switches the test mode on.
+* ERROR (o) true if the last bit has a wrong parity
 
 # Tiny Tapeout Verilog Project Template
 
