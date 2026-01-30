@@ -6,6 +6,16 @@
 
 `default_nettype none
 
+function [5:0] realto6(input integer integer_value);
+//  integer integer_value;
+//  integer_value = $rtoi(real_value);
+  if (integer_value[31:6] !== 0) begin
+    $display("ASSERTION FAILED in %m");
+    $finish;
+  end
+  realto6 = integer_value[5:0];
+endfunction
+
 // a manchester decoder for a given frequency
 
 module tt_um_hoene_manchester_decoder #(
@@ -35,14 +45,18 @@ module tt_um_hoene_manchester_decoder #(
       middle <= 0;
       out_pulsewidth <= BIT_LENGTH;
     end else if (last_in ^ in) begin
-      if (counter >= $rtoi(BIT_LENGTH * 0.75) && counter < $rtoi(BIT_LENGTH * 1.5)) begin
+      if (counter >= realto6(BIT_LENGTH * 0.75) && counter < realto6(BIT_LENGTH * 1.5)) begin
         out_data <= last_in;  // we have a long impulse, always data out
         out_clk <= 1;
         out_error <= 0;
         middle <= 1;
         out_pulsewidth <= counter;
         counter <= 0;
-      end else if (counter >= $rtoi(BIT_LENGTH * 0.25) && counter < $rtoi(BIT_LENGTH * 0.75) && !out_error) begin
+      end else if (counter >= realto6(
+              BIT_LENGTH * 0.25
+          ) && counter < realto6(
+              BIT_LENGTH * 0.75
+          ) && !out_error) begin
         if (!middle) begin
           // second half of short pulse
           out_data <= last_in;  // data out
