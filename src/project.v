@@ -133,7 +133,7 @@ module tt_um_hoene_firsttry (
   wire protocol_pwm_set;  // forwarded clock to manachester encoder
   wire protocol_swap_forward_bit;  // swap the bit, which is forwarded
   wire protocol_select_error;  // error detected
-  wire [1:0]protocol_select_state;  // 0->1->[2->]->3->0
+  wire [1:0] protocol_select_state;  // 0->1->[2->]->3->0
 
   tt_um_hoene_protocol_select user_protocol_select (
       .in_data         (protocol_counters_out_data),
@@ -143,10 +143,38 @@ module tt_um_hoene_firsttry (
       .clk             (clk),
       .in0selected     (input_selector_in0selected),
       .bit_counter     (protocol_counters_bits),
-      .parity_error    (protocol_parity_error),
       .pwm_set         (protocol_pwm_set),
       .swap_forward_bit(protocol_swap_forward_bit),
       .error           (protocol_select_error),
       .state           (protocol_select_state)
   );
+
+  // wire up the signals of serial2parallel module
+  wire [31:0] protocol_output_data;
+
+  tt_um_hoene_protocol_serial2parallel user_protocol_serial2parallel (
+      .in_data    (protocol_counters_out_data),
+      .in_clk     (protocol_counters_out_clk),
+      .store      (protocol_pwm_set && !protocol_parity_error),
+      .rst_n      (rst_n),
+      .clk        (clk),
+      .output_data(protocol_output_data)
+  );
+
+  // wire up the signals of pulse width modulator
+  wire led_red;
+  wire led_green;
+  wire led_blue;
+
+  tt_um_hoene_led_pwm user_led_pwm (
+      .data_red    (protocol_output_data[10:1]),
+      .data_green  (protocol_output_data[20:11]),
+      .data_blue   (protocol_output_data[30:21]),
+      .rst_n       (rst_n),
+      .clk         (clk),
+      .out_red  (led_red),
+      .out_green(led_green),
+      .out_blue (led_blue)
+  );
+
 endmodule

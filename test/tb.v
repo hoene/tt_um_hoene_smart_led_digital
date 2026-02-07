@@ -183,7 +183,6 @@ module tb ();
   reg protocol_select_in_sync;
   reg protocol_select_in0selected;
   reg [4:0] protocol_select_bits;
-  reg protocol_select_parity_error;
   wire protocol_select_pwm_set;
   wire protocol_select_swap_forward_bit;
   wire protocol_select_error;
@@ -195,7 +194,6 @@ module tb ();
       .in_sync         (protocol_select_in_sync),
       .in0selected     (protocol_select_in0selected),
       .bit_counter     (protocol_select_bits),
-      .parity_error    (protocol_select_parity_error),
       .rst_n           (rst_n),
       .clk             (clk),
       .pwm_set         (protocol_select_pwm_set),

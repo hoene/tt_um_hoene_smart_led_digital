@@ -7,8 +7,6 @@
 `default_nettype none
 
 function [5:0] realto6(input integer integer_value);
-//  integer integer_value;
-//  integer_value = $rtoi(real_value);
   if (integer_value[31:6] !== 0) begin
     $display("ASSERTION FAILED in %m");
     $finish;

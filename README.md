@@ -11,8 +11,9 @@ The architecture of the digital LED is based on a pipelined signal flow. The fol
 5) Bit and word counters
 6) Parity Detection
 7) Selector
-8) Pulse Width Modulator
-9) Manchester encoder
+8) Parallel to Serial
+9) Pulse Width Modulator
+10) Manchester encoder
 
 ## 1. Input Selector
 The first module is the "input_selector.v". At startup, is selects either the IN0 input or IN1 input based on whether Inß shows a toggling signal. The IN0 must toggle 63 times until the input is selected. This decision is only made once after reset. 
@@ -85,6 +86,42 @@ It calculate the parity of the first 31 bits and compares it with the last bit.
 * BIT_COUNTER (i) counting the 32 bits
 * TEST_MODE (o) 4095 LEDs switches the test mode on.
 * ERROR (o) true if the last bit has a wrong parity
+
+## 7. Select the right data for the LED
+Based on the input modes, this modules selects the right data word to be forwarded to the LED PWM.
+It also modifies the input signal to mark used LED and enables the test mode.
+
+### Inputs and Output
+* IN_DATA (i) Valid data within a frame from insync
+* IN_CLK (i) Valid clock within a frame from insync
+* INSYNC (i) if false, sets the counter back to zero, from the insync module 
+* IN0SELECTED (i) True, if IN0 is selected. It toggles with if test-mode is switched on. 
+* BIT_COUNTER (i) counting the 32 bits
+* PWM_SET (o) This data word shall be selected.
+* SWAP_FORWARD_BIT (o) The outgoing bit shall be swapped
+* ERROR (o) true if the protocol is violated.
+* STATE (o) the internal state for testing purposes
+
+## 8. Serial to Parallel
+It contains a shift register to convert the serial input to a parallel 32 bit output and in addition a 32 bit register to store this output.
+
+### Inputs and Output
+* IN_DATA (i) Valid data within a frame from insync
+* IN_CLK (i) Valid clock within a frame from insync
+* STORE (i) If true, store data in output register
+* OUTPUT_DATA (o) 32 bit output register
+
+## 9. Pulse Width Modulator
+Converts input bits to PWM outputs.
+
+### Inputs and Output
+* DATA_RED[9:0] (i) Brightness of red LED
+* DATA_GREEN[9:0] (i) Brightness of green LED
+* DATA_BLUE[9:0] (i) Brightness of blue LED
+* OUT_RED (o) LED red on
+* OUT_GREEN (o) LED green on
+* OUT_BLUE (o) LED blue on
+
 
 # Tiny Tapeout Verilog Project Template
 

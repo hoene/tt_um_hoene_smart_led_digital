@@ -15,13 +15,11 @@ module tt_um_hoene_protocol_select (
     input            rst_n,             // device reset
     input            in0selected,       // mode from input selector DIN or BIN
     input      [4:0] bit_counter,
-    input            parity_error,      // parity enable
     output reg       pwm_set,           // forwarded clock to Manchester encoder
     output reg       swap_forward_bit,  // swap the bit, which is forwarded
     output reg       error,             // error detected
     output reg [1:0] state              // 0->1->[2->]->3->0
 );
-
 
   always @(posedge clk) begin
     // reset
@@ -30,9 +28,6 @@ module tt_um_hoene_protocol_select (
       state <= 0;
       pwm_set <= 0;
       error <= 0;
-    end else if (parity_error) begin
-      swap_forward_bit <= 0;
-      pwm_set <= 0;
     end else begin
       if (in_clk) begin
         // handle states 
