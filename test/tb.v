@@ -8,6 +8,7 @@
 `include "protocol_counters.v"
 `include "protocol_parity.v"
 `include "protocol_select.v"
+`include "manchester_encoder.v"
 
 /* This testbench just instantiates the module and makes some convenient wires
    that can be driven / tested by the cocotb test.py.
@@ -201,5 +202,25 @@ module tb ();
       .error           (protocol_select_error),
       .state           (protocol_select_state)
   );
+
+  // wire up the signals of Manchester decoder
+  reg manchester_encoder_in_data;
+  reg manchester_encoder_in_clk;
+  reg manchester_encoder_in_error;
+  reg [5:0] manchester_encoder_in_pulsewidth;
+  wire manchester_encoder_out_data;
+  wire manchester_encoder_out_enable;
+
+  tt_um_hoene_manchester_encoder user_manchester_denoder (
+      .in_data      (manchester_encoder_in_data),
+      .in_clk       (manchester_encoder_in_clk),
+      .in_error     (manchester_encoder_in_error),
+      .in_pulsewidth(manchester_encoder_in_pulsewidth),
+      .clk          (clk),                               // clock
+      .rst_n        (rst_n),                             // not reset
+      .out_enable   (manchester_encoder_out_enable),
+      .out_data     (manchester_encoder_out_data)
+  );
+
 
 endmodule

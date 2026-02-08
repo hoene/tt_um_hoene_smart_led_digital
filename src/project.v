@@ -18,8 +18,8 @@ module tt_um_hoene_firsttry (
 
   // All output pins must be assigned. If not used, assign to 0.
   //  assign uo_out[7] = 0;
-  assign uio_out[7:6] = 0;
-  assign uio_oe = 1;
+  assign uio_out[6] = 0;
+  assign uio_oe[6:0] = 1;
 
   // List all unused inputs to prevent warnings
   wire _unused = &{uo_out, uio_out, uio_oe, ena, clk, rst_n, 1'b0};
@@ -167,14 +167,31 @@ module tt_um_hoene_firsttry (
   wire led_blue;
 
   tt_um_hoene_led_pwm user_led_pwm (
-      .data_red    (protocol_output_data[10:1]),
-      .data_green  (protocol_output_data[20:11]),
-      .data_blue   (protocol_output_data[30:21]),
-      .rst_n       (rst_n),
-      .clk         (clk),
-      .out_red  (led_red),
-      .out_green(led_green),
-      .out_blue (led_blue)
+      .data_red  (protocol_output_data[10:1]),
+      .data_green(protocol_output_data[20:11]),
+      .data_blue (protocol_output_data[30:21]),
+      .rst_n     (rst_n),
+      .clk       (clk),
+      .out_red   (led_red),
+      .out_green (led_green),
+      .out_blue  (led_blue)
+  );
+
+  // wire up the signals of pulse width modulator
+  wire dout_data;
+  wire dout_enable;
+  assign uio_out[7] = dout_data;
+  assign uio_oe[7] = dout_enable;
+  
+  tt_um_hoene_manchester_encoder user_manchester_encoder (
+      .in_data         (manchester_decoder_out_data),
+      .in_clk          (manchester_decoder_out_clk),
+      .in_error        (manchester_decoder_out_error),
+      .in_pulsewidth   (manchester_decoder_out_pulsewidth),
+      .rst_n           (rst_n),
+      .clk             (clk),
+      .out_data        (dout_data),
+      .out_enable      (dout_enable)
   );
 
 endmodule
