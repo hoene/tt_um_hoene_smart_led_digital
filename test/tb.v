@@ -127,18 +127,18 @@ module tb ();
   );
 
   // wire up the signals of protocol serial2parallel module
-  reg protocol_serial2parallel_data;
-  reg protocol_serial2parallel_clk;
-  reg protocol_serial2parallel_store;
-  wire [31:0] protocol_serial2parallel_out;
+  reg serial2parallel_data;
+  reg serial2parallel_clk;
+  reg serial2parallel_store;
+  wire [31:0] serial2parallel_out;
 
-  tt_um_hoene_protocol_serial2parallel user_protocol_serial2parallel (
-      .in_data    (protocol_serial2parallel_data),
-      .in_clk     (protocol_serial2parallel_clk),
-      .store      (protocol_serial2parallel_store),
+  tt_um_hoene_serial2parallel user_serial2parallel (
+      .in_data    (serial2parallel_data),
+      .in_clk     (serial2parallel_clk),
+      .store      (serial2parallel_store),
       .rst_n      (rst_n),
       .clk        (clk),
-      .output_data(protocol_serial2parallel_out)
+      .output_data(serial2parallel_out)
   );
 
   // wire up the signals of protocol counters module
@@ -201,7 +201,6 @@ module tb ();
   tt_um_hoene_manchester_encoder user_manchester_encoder (
       .in_data      (manchester_encoder_in_data),
       .in_clk       (manchester_encoder_in_clk),
-      .in_error     (manchester_encoder_in_error),
       .in_pulsewidth(manchester_encoder_in_pulsewidth),
       .clk          (clk),                               // clock
       .rst_n        (rst_n),                             // not reset

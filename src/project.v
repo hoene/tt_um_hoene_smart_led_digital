@@ -138,15 +138,15 @@ module tt_um_hoene_smart_led_digital (
   );
 
   // wire up the signals of serial2parallel module
-  wire [31:0] protocol_output_data;
+  wire [29:0] serial2parallel_data;
 
-  tt_um_hoene_protocol_serial2parallel user_protocol_serial2parallel (
+  tt_um_hoene_serial2parallel user_serial2parallel (
       .in_data    (counters_out_data),
       .in_clk     (counters_out_clk),
       .store      (protocol_pwm_set && !framing_out_frame),
       .rst_n      (rst_n),
       .clk        (clk),
-      .output_data(protocol_output_data)
+      .output_data(serial2parallel_data)
   );
 
   // wire up the signals of pulse width modulator
@@ -155,9 +155,9 @@ module tt_um_hoene_smart_led_digital (
   wire led_blue;
 
   tt_um_hoene_led_pwm user_led_pwm (
-      .data_red  (protocol_output_data[10:1]),
-      .data_green(protocol_output_data[20:11]),
-      .data_blue (protocol_output_data[30:21]),
+      .data_red  (serial2parallel_data[9:0]),
+      .data_green(serial2parallel_data[19:10]),
+      .data_blue (serial2parallel_data[29:20]),
       .rst_n     (rst_n),
       .clk       (clk),
       .out_red   (led_red),
@@ -172,9 +172,8 @@ module tt_um_hoene_smart_led_digital (
   assign uio_oe[7]  = dout_enable;
 
   tt_um_hoene_manchester_encoder user_manchester_encoder (
-      .in_data      (manchester_decoder_out_data),
-      .in_clk       (manchester_decoder_out_clk),
-      .in_error     (manchester_decoder_out_error),
+      .in_data      (protocol_out_data),
+      .in_clk       (protocol_out_clk),
       .in_pulsewidth(manchester_decoder_out_pulsewidth),
       .rst_n        (rst_n),
       .clk          (clk),

@@ -10,7 +10,6 @@
 module tt_um_hoene_manchester_encoder (
     input            in_data,        // input data
     input            in_clk,         // input clock
-    input            in_error,       // input is invalid
     input      [5:0] in_pulsewidth,  // pulse width of the input signal
     input            clk,            // global clock
     input            rst_n,          // device reset
@@ -23,7 +22,7 @@ module tt_um_hoene_manchester_encoder (
 
   always @(posedge clk) begin
     // reset
-    if (!rst_n || in_error) begin
+    if (!rst_n) begin
       out_enable <= 0;
       out_data <= 0;
       counter <= 0;
