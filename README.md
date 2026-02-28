@@ -154,7 +154,3 @@ The Smart LED has the following input and output signals:
 | io 5 | LED PWM | LED_GREEN | driving the green LED |
 | io 6 | LED PWM | LED_BLUE | driving the blue LED |
 | io 7 | Manchester encoder | OUT | output data signal |
-
-## Notes
-
-iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DSIM -Isrc -f sim_build/gl/cmds.f lsihp-sg13g2/libs.ref/sg13g2_io/verilog/sg13g2_io.v /home/runner/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/gate_level_netlist.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/tb.v
