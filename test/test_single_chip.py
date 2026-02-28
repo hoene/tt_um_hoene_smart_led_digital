@@ -4,37 +4,189 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
+from cocotb.types import Logic
+
+
+class Helpers:
+    """Various helpers for handling the signals."""
+
+    test = ""
+    dut = None
+
+    def __init__(self, dut, test):
+        self.dut = dut
+        self.test = test
+
+    decode_last = Logic("X")
+    decode_counter = 0
+    decode_middle = None
+    decode_data = []
+    decode_error = True
+    decode_speed = 24
+
+    def manchester_decode(self):
+        # Implement the Manchester decoding logic here
+
+        bit = self.dut.uio_out.value[7]
+        if bit != self.decode_last:
+            # Rising or failing edge detected
+            if (
+                self.decode_counter >= self.decode_speed * 0.75
+                and self.decode_counter <= self.decode_speed * 1.5
+            ):
+                self.decode_middle = True
+                self.decode_error = False
+                self.decode_data.append(bit)
+            elif (
+                self.decode_counter >= self.decode_speed * 1.5
+                or self.decode_counter < self.decode_speed * 0.25
+            ):
+                self.decode_error = True
+            elif (
+                self.decode_counter < self.decode_speed * 0.75
+                and self.decode_counter > 0.25
+                and not self.decode_error
+            ):
+                if not self.decode_middle:
+                    self.decode_data.append(bit)
+                self.decode_middle = not self.decode_middle
+            self.decode_counter = 0
+
+        else:
+            self.decode_counter += 1
+            if self.decode_counter >= self.decode_speed * 1.5:
+                self.decode_error = True
+        self.decode_last = bit
+
+    pwm_buffer = []
+    led_red = 0
+    led_green = 0
+    led_blue = 0
+
+    def pwm_decode(self):
+        # Counts the 16384 last IO outputs
+        self.pwm_buffer.append(self.dut.uio_out.value)
+
+        # Calculate the duty cycle for each LED
+        if len(self.pwm_buffer) > 16384:
+            last = self.pwm_buffer.pop(0)
+            if last[4] == Logic(1):
+                self.led_red -= 1
+            if last[5] == Logic(1):
+                self.led_green -= 1
+            if last[6] == Logic(1):
+                self.led_blue -= 1
+
+        if self.dut.uio_out.value[4] == Logic(1):
+            self.led_red += 1
+        if self.dut.uio_out.value[5] == Logic(1):
+            self.led_green += 1
+        if self.dut.uio_out.value[6] == Logic(1):
+            self.led_blue += 1
+
+    logs_last_in = ""
+    logs_last_io = ""
+    logs_last_out = ""
+    logs_last_oe = ""
+    logs_counter = -1
+
+    def log_outputs(self):
+        # print change changes to the input or output signals
+        self.logs_counter += 1
+        if (
+            self.dut.ui_in.value == self.logs_last_in
+            and self.dut.uio_out.value == self.logs_last_io
+            and self.dut.uo_out.value == self.logs_last_out
+            and self.dut.uio_oe.value == self.logs_last_oe
+        ):
+            return  # No change in outputs, skip logging
+
+        self.logs_last_in = self.dut.ui_in.value
+        self.logs_last_io = self.dut.uio_out.value
+        self.logs_last_out = self.dut.uo_out.value
+        self.logs_last_oe = self.dut.uio_oe.value
+        self.dut._log.debug(
+            "%s %6d ui_in=%s uio_out=%s uo_out=%s uio_oe=%s",
+            self.test,
+            self.logs_counter,
+            self.dut.ui_in.value,
+            self.dut.uio_out.value,
+            self.dut.uo_out.value,
+            self.dut.uio_oe.value,
+        )
+
+    # Clock one cycle, receive the signals, and log the outputs
+    async def one_clock(self):
+        await ClockCycles(self.dut.clk, 1)
+        self.log_outputs()
+        self.manchester_decode()
+        self.pwm_decode()
+
+    # Clock n times
+    async def n_clock(self, n):
+        for _ in range(n):
+            await self.one_clock()
+
+    # Manchester encoding following IEEE 802.3
+    async def manchester_encode(self, data, speed=24, pin=0):
+        # Implement the Manchester encoding logic here
+
+        for bit in data:
+            if bit == 0:
+                val = self.dut.ui_in.value
+                val[pin] = 1
+                self.dut.ui_in.value = val
+                await self.n_clock(speed // 2)
+                val = self.dut.ui_in.value
+                val[pin] = 0
+                self.dut.ui_in.value = val
+                await self.n_clock((speed + 1) // 2)
+            else:
+                val = self.dut.ui_in.value
+                val[pin] = 0
+                self.dut.ui_in.value = val
+                await self.n_clock(speed // 2)
+                val = self.dut.ui_in.value
+                val[pin] = 1
+                self.dut.ui_in.value = val
+                await self.n_clock((speed + 1) // 2)
 
 
 @cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+async def test_input_selector(dut):
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, unit="us")
-    cocotb.start_soon(clock.start())
+    for loops in range(0, 2):
 
-    # Reset
-    dut._log.info("Reset")
-    dut.ena.value = 1
-    dut.ui_in.value = 0
-    dut.uio_in.value = 0
-    dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
-    dut.rst_n.value = 1
+        dut._log.info("Start input selector test %s", loops)
 
-    dut._log.info("Test project behavior")
+        # Set the clock period to 41.67 ns (24 MHz)
+        clock = Clock(dut.clk, 42, unit="ns")
+        cocotb.start_soon(clock.start())
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+        helpers = Helpers(dut, "input_selector" + str(loops))
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+        # Reset
+        dut._log.info("Reset")
+        dut.ena.value = 1
+        dut.ui_in.value = 0
+        dut.uio_in.value = 0
+        dut.rst_n.value = 0
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    # assert dut.uo_out.value == 50
+        await helpers.n_clock(10)
+        dut.rst_n.value = 1
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+        dut._log.info("Test input selector on pin 0, needs 64 toggles")
+
+        data = [1] * (254 + loops)
+        await helpers.manchester_encode(data, speed=24, pin=1)
+        # no IN0Selected, so output should be 0
+        assert dut.uo_out.value[0] == 0
+
+        data = [1] * 62
+        await helpers.manchester_encode(data, speed=24, pin=0)
+        # no IN0Selected, so output should be 0
+        assert dut.uo_out.value[0] == 0
+
+        data = [1]
+        await helpers.manchester_encode(data, speed=24, pin=0)
+        assert dut.uo_out.value[0] == 1 - loops
