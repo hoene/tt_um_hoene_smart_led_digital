@@ -31,12 +31,12 @@ The algorithmic delay is one clock cycle.
 * IN0SELECTED (o,+1) True, if IN0 is selected. It toggles if the test-mode is switched on.
 
 ## Low pass filter
-In order to mitigate spikes and glitches in the input signals, a low pass filter filters out signals which have a length of only one clock cycle.
-The algorithmic delay is two clock cycles.
+In order to mitigate spikes and glitches in the input signals, a low pass filter filters out signals in which if 2 out of 5 bits are different.
+The algorithmic delay is five clock cycles.
 
 ### Inputs and Outputs
 * IN (i,+1) Data signal input from input_selector's OUT
-* OUT (o,+3) Low-pass filtered data signal output
+* OUT (o,+5) Low-pass filtered data signal output
 
 ## 3. A Manchester decoder
 The input signal is decoded according to the Manchester coding. Both the data signal and the clock signal are reconstructed. If the input signal looks strange or is missing, this is reported at OUT_ERROR. We assume that the frequency of the input is about 24 times less than the internal clock signal. However, for every data bit, the real length of the data is measured and reported.
@@ -45,11 +45,11 @@ The algorithmic delay is one clock cycle.
 If the decoder is in error state, then a long impulse is needed to reset it to good. 
 
 ### Inputs and Outputs
-* IN (i,+3) Data signal input from low pass filters's OUT
-* OUT_DATA (o,+4) data signal bit. It is only valid while OUT_CLK is high, too.
-* OUT_CLK (o,+4) one cycle high indicating a new OUT_DATA
-* OUT_ERROR (o,+4) the manchester decoding is not according to definition. It remain in error state till a good long bit is detected (e.g., a one and zero bit sequences) 
-* OUT_PULSEWIDTH (o,+4) the 6 bit length of the last bit. 
+* IN (i,+5) Data signal input from low pass filters's OUT
+* OUT_DATA (o,+6) data signal bit. It is only valid while OUT_CLK is high, too.
+* OUT_CLK (o,+6) one cycle high indicating a new OUT_DATA
+* OUT_ERROR (o,+6) the manchester decoding is not according to definition. It remain in error state till a good long bit is detected (e.g., a one and zero bit sequences) 
+* OUT_PULSEWIDTH (o,+6) the 6 bit length of the last bit. 
 
 ## 4. Synchronizing the beginning of a frame
 Based on the output of the Manchester decoder, a frame start is detected. The first byte of a frame must start with two ones in row (two short pulses). Before that, alternating 1 or 0 are expected (which result in long pulses with Manchester encoding).
@@ -57,12 +57,12 @@ It outputs a signal "out_frame" to indicate that the frame start has been detect
 The algorithmic delay is one cycle.
 
 ### Inputs and Outputs
-* IN_DATA (i,+4) the bit from the Manchester decoding
-* IN_CLK (i,+4) the clock signal from the Manchester decoding
-* IN_ERROR (i,+4) The manchester decoding is in error state
-* OUT_FRAME (o,+5) True if the frame has started
-* OUT_DATA (o,+5) IN_DATA delayed by one
-* OUT_CLK (o,+5) IN_CLK delayed by one
+* IN_DATA (i,+6) the bit from the Manchester decoding
+* IN_CLK (i,+6) the clock signal from the Manchester decoding
+* IN_ERROR (i,+6) The manchester decoding is in error state
+* OUT_FRAME (o,+7) True if the frame has started
+* OUT_DATA (o,+7) IN_DATA delayed by one
+* OUT_CLK (o,+7) IN_CLK delayed by one
 
 ## 5. Counting the bits of LED data and the number of LEDs
 The next modules counts bits of a LED data word and the number of LED data words.
@@ -70,14 +70,14 @@ The bits are used to control the next stages. If the number of LEDs reaches 4095
 This block has an algorithmic delay of one clock cycle.
 
 ### Inputs and Output
-* IN_DATA (i,+5) Input data
-* IN_CLK (i,+5) Input clock
-* IN_FRAME (i,+5) if true, the data is in a frame 
-* BIT_COUNTER (o,+6) counting the 32 bits
-* TEST_MODE (o,+6) 4095 LED data wordss switches the test mode on.
-* OUT_DATA (o,+6) IN_DATA delayed by one
-* OUT_CLK (o,+6) IN_CLK delayed by one
-* OUT_FRAME (o,+6) IN_FRAME delayed by one
+* IN_DATA (i,+7) Input data
+* IN_CLK (i,+7) Input clock
+* IN_FRAME (i,+7) if true, the data is in a frame 
+* BIT_COUNTER (o,+8) counting the 32 bits
+* TEST_MODE (o,+8) 4095 LED data wordss switches the test mode on.
+* OUT_DATA (o,+8) IN_DATA delayed by one
+* OUT_CLK (o,+8) IN_CLK delayed by one
+* OUT_FRAME (o,+8) IN_FRAME delayed by one
 
 ## 6. Select the right ând correct data for the LED
 Based on the input modes, this modules selects the right LED data word which shall to be forwarded to the LED PWM.
@@ -88,15 +88,15 @@ A LED data word has 32 bits:
 31: Parity bit. It can be used to detect whether the parity is correct. It calculates the parity of the first 31 bits and compares it with the last bit.
 
 ### Inputs and Output
-* IN_DATA (i+6) Valid data within a frame from counter
-* IN_CLK (i+6) Valid clock within a frame from counter
-* IN_FRAME (i+6) if true, the data is in a frame from counter
+* IN_DATA (i+8) Valid data within a frame from counter
+* IN_CLK (i+8) Valid clock within a frame from counter
+* IN_FRAME (i+8) if true, the data is in a frame from counter
 * IN0SELECTED (i+1) True, if IN0 is selected. It toggles with if test-mode is switched on. 
-* BIT_COUNTER (i+6) counting the 32 bits
-* PWM_SET (o+7) This data word shall be selected.
-* OUT_DATA (o+7) The outgoing data signal, modified if required.
-* OUT_CLK (o+7) IN_CLK delayed by one clock state.
-* OUT_CLK_LED (o+7) Clock for the bit swift register
+* BIT_COUNTER (i+8) counting the 32 bits
+* PWM_SET (o+9) This data word shall be selected.
+* OUT_DATA (o+9) The outgoing data signal, modified if required.
+* OUT_CLK (o+9) IN_CLK delayed by one clock state.
+* OUT_CLK_LED (o+9) Clock for the bit swift register
 * ERROR (o) true if the protocol is violated.
 * STATE (o) the internal state for testing purposes
 
@@ -104,18 +104,18 @@ A LED data word has 32 bits:
 It contains a shift register to convert the serial input to a parallel 30 bit output and in addition a 30 bit register to store this output.
 
 ### Inputs and Output
-* IN_DATA (i+7) Valid data within a frame from selector
-* IN_CLK_LED (i+7) Valid clock within a frame from selector
-* PWM_SET (i+7) If true, store data in output register
-* OUTPUT_DATA (o+8) 30 bit output register
+* IN_DATA (i+9) Valid data within a frame from selector
+* IN_CLK_LED (i+9) Valid clock within a frame from selector
+* PWM_SET (i+9) If true, store data in output register
+* OUTPUT_DATA (o+10) 30 bit output register
 
 ## 9. Pulse Width Modulator
 Converts input bits to PWM outputs.
 
 ### Inputs and Output
-* DATA_RED[9:0] (i+8) Brightness of red LED
-* DATA_GREEN[9:0] (i+8) Brightness of green LED
-* DATA_BLUE[9:0] (i+8) Brightness of blue LED
+* DATA_RED[9:0] (i+10) Brightness of red LED
+* DATA_GREEN[9:0] (i+10) Brightness of green LED
+* DATA_BLUE[9:0] (i+10) Brightness of blue LED
 * OUT_RED (o) LED red on
 * OUT_GREEN (o) LED green on
 * OUT_BLUE (o) LED blue on
@@ -124,10 +124,10 @@ Converts input bits to PWM outputs.
 Converts the outgoing data stream into a Manchester encoded signal.
 
 ### Inputs and Output
-* IN_DATA (i,+8) Valid data within a frame from select
-* IN_CLK (i,+8) Valid clock within a frame from select
-* IN_PULSEWIDTH (i,+4) the 6 bit length of the last bit. 
-* BIT_COUNTER (o,+6) counting the 32 bits
+* IN_DATA (i,+10) Valid data within a frame from select
+* IN_CLK (i,+10) Valid clock within a frame from select
+* IN_PULSEWIDTH (i,+6) the 6 bit length of the last bit. 
+* BIT_COUNTER (o,+8) counting the 32 bits
 * DOUT (o) The 32 bit output register
 
 # Overall Design

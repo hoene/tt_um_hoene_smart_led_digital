@@ -14,7 +14,7 @@ async def test_low_pass_filter(dut):
     clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
-    for loops in range(0,2):
+    for loops in range(0, 2):
         # Reset
         dut._log.debug("Reset")
         dut.ena.value = 1
@@ -23,7 +23,7 @@ async def test_low_pass_filter(dut):
 
         await ClockCycles(dut.clk, 2)
 
-        # check output signals    
+        # check output signals
         assert dut.low_pass_filter_out.value == 0
 
         # start
@@ -31,25 +31,29 @@ async def test_low_pass_filter(dut):
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 2)
 
-        # check output signals    
+        # check output signals
         assert dut.low_pass_filter_out.value == 0
 
+        last3 = 0
+        last2 = 0
         last1 = 0
         last0 = 0
         exp = 0
-        # check input 1 
+        # check input 1
         dut._log.debug("low pass filtering")
-        for i in range(0,32):
-            for b in range(0,5):
+        for i in range(0, 256):
+            for b in range(0, 8):
                 out = (i >> b) & 1
                 dut.low_pass_filter_in.value = out
                 await ClockCycles(dut.clk, 1)
                 assert exp == dut.low_pass_filter_out.value
 
                 # prepare values for new cycle
-                if out+last0+last1 >= 2:
+                if out + last0 + last1 + last2 + last3 >= 3:
                     exp = 1
                 else:
                     exp = 0
-                last1=last0
-                last0=out
+                last3 = last2
+                last2 = last1
+                last1 = last0
+                last0 = out
