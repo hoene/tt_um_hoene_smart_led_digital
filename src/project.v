@@ -17,12 +17,10 @@ module tt_um_hoene_smart_led_digital (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  //  assign uo_out[7] = 0;
-  assign uio_out[6]  = 0;
   assign uio_oe[6:0] = 1;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{uo_out, uio_out, uio_oe, ena, clk, rst_n, 1'b0};
+  wire _unused = &{ui_in[7:2], uio_in, ena, 1'b0};
 
   // wire up the signals of input_selector
 
@@ -33,9 +31,8 @@ module tt_um_hoene_smart_led_digital (
   wire counters_test_mode;
 
   wire input_selector_out;
-  assign uo_out[0] = input_selector_out;
   wire input_selector_in0selected;
-  assign uo_out[1] = input_selector_in0selected;
+  assign uo_out[0] = input_selector_in0selected;
 
   tt_um_hoene_input_selector all_input_selector (
       .in0        (input_selector_in0),
@@ -49,7 +46,7 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of low pass filter
   wire low_pass_filter_out;
-  assign uo_out[2] = low_pass_filter_out;
+  assign uo_out[1] = low_pass_filter_out;
 
   tt_um_hoene_low_pass_filter all_low_pass_filter (
       .in   (input_selector_out),
@@ -60,13 +57,12 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of Manchester decoder
   wire manchester_decoder_out_data;
-  assign uo_out[3] = manchester_decoder_out_data;
+  assign uo_out[2] = manchester_decoder_out_data;
   wire manchester_decoder_out_clk;
-  assign uo_out[4] = manchester_decoder_out_clk;
+  assign uo_out[3] = manchester_decoder_out_clk;
   wire manchester_decoder_out_error;
-  assign uo_out[5] = manchester_decoder_out_error;
+  assign uo_out[4] = manchester_decoder_out_error;
   wire [5:0] manchester_decoder_out_pulsewidth;
-  assign uio_out[5:0] = manchester_decoder_out_pulsewidth;
 
   tt_um_hoene_manchester_decoder user_manchester_decoder (
       .in            (low_pass_filter_out),
@@ -81,6 +77,7 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of protocol insync module
   wire framing_out_frame;
+  assign uo_out[5] = framing_out_frame;
   wire framing_out_clk;
   wire framing_out_data;
 
@@ -99,8 +96,8 @@ module tt_um_hoene_smart_led_digital (
   wire [4:0] counters_bits;
   wire counters_out_clk;
   wire counters_out_data;
-  wire counters_test_mode_out;
-  assign uo_out[6] = counters_test_mode_out;
+  wire counters_out_frame;
+  assign uo_out[6] = counters_test_mode;
 
   tt_um_hoene_protocol_counters user_protocol_counters (
       .in_clk     (framing_out_clk),
@@ -108,23 +105,28 @@ module tt_um_hoene_smart_led_digital (
       .in_frame   (framing_out_frame),
       .clk        (clk),
       .bit_counter(counters_bits),
-      .test_mode  (counters_test_mode_out),
+      .test_mode  (counters_test_mode),
       .out_data   (counters_out_data),
-      .out_clk    (counters_out_clk)
+      .out_clk    (counters_out_clk),
+      .out_frame  (counters_out_frame)
   );
 
   // wire up the signals of LED select module
   wire protocol_pwm_set; // the LED data shall be set if 1 and frame is falling, otherwise the LED data is not updated
+  assign uo_out[7] = protocol_pwm_set;
   wire protocol_out_data;  // forward data to s2p and manachester encoder
+  assign uio_out[3] = protocol_out_data;
   wire protocol_out_clk;  // forward clock to manachester encoder
   wire protocol_out_led_clk;  // forward clock to s2p
   wire protocol_error;  // error detected
+  assign uio_out[2] = protocol_error;
   wire [1:0] protocol_state;  // 0->1->[2->]->3->0
+  assign uio_out[1:0] = protocol_state;
 
   tt_um_hoene_protocol user_protocol (
       .in_data    (counters_out_data),
       .in_clk     (counters_out_clk),
-      .in_frame   (framing_out_frame),
+      .in_frame   (counters_out_frame),
       .rst_n      (rst_n),
       .clk        (clk),
       .in0selected(input_selector_in0selected),
@@ -142,7 +144,7 @@ module tt_um_hoene_smart_led_digital (
 
   tt_um_hoene_serial2parallel user_serial2parallel (
       .in_data    (counters_out_data),
-      .in_clk     (counters_out_clk),
+      .in_clk     (protocol_out_led_clk),
       .store      (protocol_pwm_set && !framing_out_frame),
       .rst_n      (rst_n),
       .clk        (clk),
@@ -151,8 +153,11 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of pulse width modulator
   wire led_red;
+  assign uio_out[4] = led_red;
   wire led_green;
+  assign uio_out[5] = led_green;
   wire led_blue;
+  assign uio_out[6] = led_blue;
 
   tt_um_hoene_led_pwm user_led_pwm (
       .data_red  (serial2parallel_data[9:0]),

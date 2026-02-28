@@ -130,7 +130,7 @@ module tb ();
   reg serial2parallel_data;
   reg serial2parallel_clk;
   reg serial2parallel_store;
-  wire [31:0] serial2parallel_out;
+  wire [29:0] serial2parallel_out;
 
   tt_um_hoene_serial2parallel user_serial2parallel (
       .in_data    (serial2parallel_data),

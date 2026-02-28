@@ -20,6 +20,8 @@ module tt_um_hoene_manchester_encoder (
   reg [4:0] counter;
   reg middle;
 
+  wire _unused = &{in_pulsewidth[0], 1'b0};
+
   always @(posedge clk) begin
     // reset
     if (!rst_n) begin

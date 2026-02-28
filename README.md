@@ -130,6 +130,31 @@ Converts the outgoing data stream into a Manchester encoded signal.
 * BIT_COUNTER (o,+6) counting the 32 bits
 * DOUT (o) The 32 bit output register
 
+# Overall Design
+
+The Smart LED has the following input and output signals:
+
+| port | pin | module | name | function |
+| ---- | --- | ------ | ---- | -------- |
+| in | 0 | input selector | IN0 | primary input data signal |
+| in | 1 | input selector | IN1 | backup input data signal |
+| in | 2-7 | - | - |
+| out | 0 | input selector | IN0SELECTED | high if input 0 is selected |
+| out | 1 | low pass filter | OUT | seelcted, low pass filtered signal |
+| out | 2 | manchester decoder | data | the decoded data bit |
+| out | 3 | manchester decoder | clk | the clock output |
+| out | 4 | manchester decoder | error | error state |
+| out | 5 | framing | frame | data frame detected |
+| out | 6 | counters | test_mode | test mode active |
+| out | 7 | protocol | PWM_SET | set the pwm generator |
+| io | 1:0 | protocol | STATE | the current interal state |
+| io 2 | protocol | ERROR | error in the protocol decoding |
+| io 3 | protocol | OUT_DATA | data output  |
+| io 4 | LED PWM | LED_RED | driving the red LED |
+| io 5 | LED PWM | LED_GREEN | driving the green LED |
+| io 6 | LED PWM | LED_BLUE | driving the blue LED |
+| io 7 | Manchester encoder | OUT | output data signal |
+
 ## Notes
 
 iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DSIM -Isrc -f sim_build/gl/cmds.f lsihp-sg13g2/libs.ref/sg13g2_io/verilog/sg13g2_io.v /home/runner/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/gate_level_netlist.v /home/runner/work/tt_um_hoene_firsttry/tt_um_hoene_firsttry/test/tb.v
