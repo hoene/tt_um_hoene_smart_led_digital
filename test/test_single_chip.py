@@ -10,19 +10,26 @@ from cocotb.types import Logic
 class Helpers:
     """Various helpers for handling the signals."""
 
-    test = ""
-    dut = None
-
     def __init__(self, dut, test):
         self.dut = dut
         self.test = test
 
-    decode_last = Logic("X")
-    decode_counter = 0
-    decode_middle = None
-    decode_data = []
-    decode_error = True
-    decode_speed = 24
+        self.decode_last = Logic("X")
+        self.decode_counter = 0
+        self.decode_middle = None
+        self.decode_data = []
+        self.decode_error = True
+        self.decode_speed = 24
+        self.decoder_buffer = []
+        self.pwm_buffer = []
+        self.led_red = 0
+        self.led_green = 0
+        self.led_blue = 0
+        self.logs_last_in = ""
+        self.logs_last_io = ""
+        self.logs_last_out = ""
+        self.logs_last_oe = ""
+        self.logs_counter = -1
 
     def manchester_decode(self):
         # Implement the Manchester decoding logic here
@@ -58,8 +65,6 @@ class Helpers:
                 self.decode_error = True
         self.decode_last = bit
 
-    decoder_buffer = []
-
     def data_in(self):
         # Read the data from the manchester decoder and log it
         val = self.dut.uo_out.value
@@ -67,11 +72,6 @@ class Helpers:
             self.decoder_buffer.append(
                 1 if val[2] == Logic(1) else 0 if val[2] == Logic("0") else "X"
             )
-
-    pwm_buffer = []
-    led_red = 0
-    led_green = 0
-    led_blue = 0
 
     def pwm_decode(self):
         # Counts the 16384 last IO outputs
@@ -94,12 +94,6 @@ class Helpers:
         if self.dut.uio_out.value[6] == Logic(1):
             self.led_blue += 1
 
-    logs_last_in = ""
-    logs_last_io = ""
-    logs_last_out = ""
-    logs_last_oe = ""
-    logs_counter = -1
-
     def log_outputs(self):
         # print change changes to the input or output signals
         self.logs_counter += 1
@@ -115,7 +109,7 @@ class Helpers:
         self.logs_last_io = self.dut.uio_out.value
         self.logs_last_out = self.dut.uo_out.value
         self.logs_last_oe = self.dut.uio_oe.value
-        self.dut._log.info(
+        self.dut._log.debug(
             "%s %6d ui_in=%s uio_out=%s uo_out=%s uio_oe=%s",
             self.test,
             self.logs_counter,
@@ -163,7 +157,7 @@ class Helpers:
                 await self.n_clock((speed + 1) // 2)
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_input_selector(dut):
 
     for loops in range(0, 2):
@@ -203,7 +197,7 @@ async def test_input_selector(dut):
         assert dut.uo_out.value[0] == 1 - loops
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_low_pass_filter(dut):
 
     dut._log.info("Start low pass filter")
@@ -245,7 +239,7 @@ async def test_low_pass_filter(dut):
             lastbits.pop(0)
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_manchester_decoder(dut):
 
     dut._log.info("Start manchester decoder")
@@ -255,7 +249,6 @@ async def test_manchester_decoder(dut):
     cocotb.start_soon(clock.start())
 
     helpers = Helpers(dut, "manchester_decoder")
-
     # Reset
     dut._log.info("Reset")
     dut.ena.value = 1
@@ -293,10 +286,10 @@ async def test_manchester_decoder(dut):
         assert helpers.decoder_buffer == data
         assert dut.uo_out.value[4] == 0  # no error
 
-    # send data too fast
+    # send data too slow
     helpers.decoder_buffer = []
     data = [1, 0, 0, 1, 0, 1]
-    await helpers.manchester_encode(data, speed=37, pin=1)
+    await helpers.manchester_encode(data, speed=49, pin=1)
     assert dut.uo_out.value[4] == 1  # error
 
     # try to recover from error state by sending valid data
@@ -304,7 +297,7 @@ async def test_manchester_decoder(dut):
     await helpers.manchester_encode(data, speed=24, pin=1)
     assert dut.uo_out.value[4] == 0  # no error
 
-    # send data too slow
+    # send data too fast
     helpers.decoder_buffer = []
     data = [0, 0, 0]
     await helpers.manchester_encode(
@@ -341,11 +334,16 @@ async def test_framing(dut):
     assert dut.uo_out.value[4] == 1  # error
 
     ## now send one long impulses and two ones
-    data = [0, 1, 1]
+    data = [0, 1, 0]
     await helpers.manchester_encode(data, speed=24, pin=1)
-
     assert dut.uo_out.value[4] == 0  # no error
-    assert helpers.decoder_buffer == [1, 1]  # first bit is lost
+    assert helpers.decoder_buffer == [1, 0]  # first bit is lost
+    assert dut.uo_out.value[5] == 0  # frame
+
+    data = [1, 1]
+    await helpers.manchester_encode(data, speed=24, pin=1)
+    assert dut.uo_out.value[4] == 0  # no error
+    assert helpers.decoder_buffer == [1, 0, 1, 1]  # first bit is lost
     assert dut.uo_out.value[5] == 1  # frame
 
     # wait for 42 cycles
@@ -364,3 +362,50 @@ async def test_framing(dut):
     helpers.log_outputs()
     assert dut.uo_out.value[4] == 1  # error
     assert dut.uo_out.value[5] == 0
+
+
+@cocotb.test()
+async def test_counters(dut):
+
+    dut._log.info("Start counters")
+
+    # Set the clock period to 41.67 ns (24 MHz)
+    clock = Clock(dut.clk, 42, unit="ns")
+    cocotb.start_soon(clock.start())
+
+    helpers = Helpers(dut, "counters")
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+    dut.rst_n.value = 0
+
+    await helpers.n_clock(10)
+    dut.rst_n.value = 1
+
+    dut._log.info("test counters")
+    dut._log.info("1 %s", dut.user_project.counters_bits.value)
+    ## now send one long impulses and two ones
+    data = [0, 1, 1]
+    await helpers.manchester_encode(data, speed=19, pin=1)
+    dut._log.info("2 %s", dut.user_project.counters_bits.value)
+
+    assert dut.uo_out.value[4] == 0  # no error
+    assert helpers.decoder_buffer == [1, 1]  # first bit is lost
+    assert dut.uo_out.value[5] == 1  # frame
+
+    for bits in range(0, 32):
+        assert dut.user_project.counters_bits.value == bits
+        await helpers.manchester_encode([1], speed=19, pin=1)
+        assert dut.uo_out.value[6] == 0  # no test
+
+    # send some more data
+    for leds in range(0, 131039):
+        await helpers.manchester_encode([1], speed=19, pin=1)
+        assert dut.uo_out.value[6] == 0  # no test
+
+    # final LED
+    await helpers.manchester_encode([1], speed=19, pin=1)
+    assert dut.uo_out.value[6] == 1  # test mode should be active after 4096 LEDs

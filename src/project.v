@@ -82,7 +82,7 @@ module tt_um_hoene_smart_led_digital (
   wire framing_out_data;
 
   tt_um_hoene_framing user_framing (
-      .in_data  (manchester_decoder_out_clk),
+      .in_data  (manchester_decoder_out_data),
       .in_clk   (manchester_decoder_out_clk),
       .in_error (manchester_decoder_out_error),
       .rst_n    (rst_n),
@@ -100,8 +100,8 @@ module tt_um_hoene_smart_led_digital (
   assign uo_out[6] = counters_test_mode;
 
   tt_um_hoene_protocol_counters user_protocol_counters (
-      .in_clk     (framing_out_clk),
-      .in_data    (framing_out_data),
+      .in_clk     (manchester_decoder_out_clk),
+      .in_data    (manchester_decoder_out_data),
       .in_frame   (framing_out_frame),
       .clk        (clk),
       .bit_counter(counters_bits),
