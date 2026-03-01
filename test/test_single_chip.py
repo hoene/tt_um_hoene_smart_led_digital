@@ -105,7 +105,7 @@ class Helpers:
         self.logs_last_io = self.dut.uio_out.value
         self.logs_last_out = self.dut.uo_out.value
         self.logs_last_oe = self.dut.uio_oe.value
-        self.dut._log.debug(
+        self.dut._log.info(
             "%s %6d ui_in=%s uio_out=%s uo_out=%s uio_oe=%s",
             self.test,
             self.logs_counter,
@@ -190,3 +190,45 @@ async def test_input_selector(dut):
         data = [1]
         await helpers.manchester_encode(data, speed=24, pin=0)
         assert dut.uo_out.value[0] == 1 - loops
+
+
+@cocotb.test()
+async def test_low_pass_filter(dut):
+
+    dut._log.info("Start low pass filter")
+
+    # Set the clock period to 41.67 ns (24 MHz)
+    clock = Clock(dut.clk, 42, unit="ns")
+    cocotb.start_soon(clock.start())
+
+    helpers = Helpers(dut, "low_pass_filter")
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+    dut.rst_n.value = 0
+
+    await helpers.n_clock(10)
+    dut.rst_n.value = 1
+
+    dut._log.info("test low pass filter")
+
+    lastbits = [0] * 6
+    for loops in range(0, 128):
+        for bits in range(0, 7):
+            bit = (loops >> bits) & 1
+
+            val = dut.ui_in.value
+            val[1] = bit
+            dut.ui_in.value = val
+
+            await helpers.n_clock(1)
+            # helpers.log_outputs()
+            res = dut.uo_out.value[1]
+            sum = lastbits[0:5].count(1)
+            assert (sum >= 3 and res == 1) or (sum < 3 and res == 0)
+
+            lastbits.append(bit)
+            lastbits.pop(0)
