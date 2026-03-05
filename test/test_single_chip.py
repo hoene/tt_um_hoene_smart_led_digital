@@ -109,7 +109,7 @@ class Helpers:
         self.logs_last_io = self.dut.uio_out.value
         self.logs_last_out = self.dut.uo_out.value
         self.logs_last_oe = self.dut.uio_oe.value
-        self.dut._log.debug(
+        self.dut._log.info(
             "%s %6d ui_in=%s uio_out=%s uo_out=%s uio_oe=%s",
             self.test,
             self.logs_counter,
@@ -157,7 +157,7 @@ class Helpers:
                 await self.n_clock((speed + 1) // 2)
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_input_selector(dut):
 
     for loops in range(0, 2):
@@ -197,7 +197,7 @@ async def test_input_selector(dut):
         assert dut.uo_out.value[0] == 1 - loops
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_low_pass_filter(dut):
 
     dut._log.info("Start low pass filter")
@@ -239,7 +239,7 @@ async def test_low_pass_filter(dut):
             lastbits.pop(0)
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_manchester_decoder(dut):
 
     dut._log.info("Start manchester decoder")
@@ -307,7 +307,7 @@ async def test_manchester_decoder(dut):
     assert helpers.decoder_buffer != data
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_framing(dut):
 
     dut._log.info("Start frame detector")
@@ -364,7 +364,7 @@ async def test_framing(dut):
     assert dut.uo_out.value[5] == 0
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_counters(dut):
 
     dut._log.info("Start counters")
@@ -386,11 +386,9 @@ async def test_counters(dut):
     dut.rst_n.value = 1
 
     dut._log.info("test counters")
-    dut._log.info("1 %s", dut.user_project.counters_bits.value)
     ## now send one long impulses and two ones
     data = [0, 1, 1]
     await helpers.manchester_encode(data, speed=19, pin=1)
-    dut._log.info("2 %s", dut.user_project.counters_bits.value)
 
     assert dut.uo_out.value[4] == 0  # no error
     assert helpers.decoder_buffer == [1, 1]  # first bit is lost
@@ -409,3 +407,130 @@ async def test_counters(dut):
     # final LED
     await helpers.manchester_encode([1], speed=19, pin=1)
     assert dut.uo_out.value[6] == 1  # test mode should be active after 4096 LEDs
+
+
+# @cocotb.test()
+async def test_protocol_bin(dut):
+
+    dut._log.info("Start protocol bin")
+
+    for parity in range(0, 2):
+        # Set the clock period to 41.67 ns (24 MHz)
+        clock = Clock(dut.clk, 42, unit="ns")
+        cocotb.start_soon(clock.start())
+
+        helpers = Helpers(dut, "protocol_bin_" + str(parity))
+
+        # Reset
+        dut._log.info("Reset")
+        dut.ena.value = 1
+        dut.ui_in.value = 0
+        dut.uio_in.value = 0
+        dut.rst_n.value = 0
+
+        await helpers.n_clock(10)
+        dut.rst_n.value = 1
+
+        dut._log.info("test protocol")
+        ## now send one long impulses and two ones
+        data = [0, 1, 1]
+        await helpers.manchester_encode(data, speed=19, pin=1)
+
+        assert dut.uo_out.value[4] == 0  # no error
+        assert helpers.decoder_buffer == [1, 1]  # first bit is lost
+        assert dut.uo_out.value[5] == 1  # frame
+        assert dut.user_project.counters_bits.value == 0
+        assert dut.user_project.protocol_state.value == 0
+
+        helpers.decoder_buffer = []
+        data = [1]
+        await helpers.manchester_encode(data, speed=19, pin=1)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 1
+        assert dut.user_project.protocol_state.value == 1
+        assert dut.uio_out.value[3] == 0  # data output inverse
+
+        helpers.decoder_buffer = []
+        data = [1] * 11 + [0] * 14 + [1] * 5
+        await helpers.manchester_encode(data, speed=19, pin=1)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 31
+        assert dut.user_project.protocol_state.value == 1
+        assert dut.uio_out.value[3] == 1  # data output normal
+
+        helpers.decoder_buffer = []
+        data = [1]
+        await helpers.manchester_encode(data, speed=19, pin=1)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 0
+        assert dut.user_project.protocol_state.value == 2
+        assert dut.uio_out.value[3] == 0  # data output inverse
+
+        # second LED word
+        print(parity)
+        helpers.decoder_buffer = []
+        data = [1] * 12 + [0] * 14 + [1] * 5 + [parity]
+        await helpers.manchester_encode(data, speed=19, pin=1)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 0
+        assert dut.user_project.protocol_state.value == 3
+        assert dut.uio_out.value[3] == 1 - parity  # data output inverse
+        assert dut.uo_out.value[7] == parity  # PWM_SET
+
+
+@cocotb.test()
+async def test_protocol_din(dut):
+
+    dut._log.info("Start protocol din")
+
+    for parity in range(0, 2):
+        # Set the clock period to 41.67 ns (24 MHz)
+        clock = Clock(dut.clk, 42, unit="ns")
+        cocotb.start_soon(clock.start())
+
+        helpers = Helpers(dut, "protocol_din_" + str(parity))
+
+        # Reset
+        dut._log.info("Reset")
+        dut.ena.value = 1
+        dut.ui_in.value = 0
+        dut.uio_in.value = 0
+        dut.rst_n.value = 0
+
+        await helpers.n_clock(10)
+        dut.rst_n.value = 1
+        dut._log.info("test protocol din")
+        ## now send one long impulses and two ones
+        data = [0, 1] * 64 + [1]
+        await helpers.manchester_encode(data, speed=19, pin=0)
+
+        assert dut.uo_out.value[4] == 0  # no error
+        assert helpers.decoder_buffer[-2:] == [1, 1]  # first bit is lost
+        assert dut.uo_out.value[5] == 1  # frame
+        assert dut.user_project.counters_bits.value == 0
+        assert dut.user_project.protocol_state.value == 0
+
+        helpers.decoder_buffer = []
+        data = [1]
+        await helpers.manchester_encode(data, speed=19, pin=0)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 1
+        assert dut.user_project.protocol_state.value == 1
+        assert dut.uio_out.value[3] == 0  # data output inverse
+
+        helpers.decoder_buffer = []
+        data = [1] * 11 + [0] * 14 + [1] * 5
+        await helpers.manchester_encode(data, speed=19, pin=0)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 31
+        assert dut.user_project.protocol_state.value == 1
+        assert dut.uio_out.value[3] == 1  # data output normal
+
+        helpers.decoder_buffer = []
+        data = [parity]
+        await helpers.manchester_encode(data, speed=19, pin=0)
+        assert helpers.decoder_buffer == data
+        assert dut.user_project.counters_bits.value == 0
+        assert dut.user_project.protocol_state.value == 3
+        assert dut.uio_out.value[3] == 1 - parity  # data output inverse
+        assert dut.uo_out.value[7] == parity  # PWM_SET

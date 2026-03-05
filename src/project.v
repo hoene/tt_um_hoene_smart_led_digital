@@ -17,7 +17,7 @@ module tt_um_hoene_smart_led_digital (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uio_oe[6:0] = 1;
+  assign uio_oe[6:0] = 7'b1111111;
 
   // List all unused inputs to prevent warnings
   wire _unused = &{ui_in[7:2], uio_in, ena, 1'b0};
@@ -94,9 +94,6 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of protocol counters module
   wire [4:0] counters_bits;
-  wire counters_out_clk;
-  wire counters_out_data;
-  wire counters_out_frame;
   assign uo_out[6] = counters_test_mode;
 
   tt_um_hoene_protocol_counters user_protocol_counters (
@@ -105,10 +102,7 @@ module tt_um_hoene_smart_led_digital (
       .in_frame   (framing_out_frame),
       .clk        (clk),
       .bit_counter(counters_bits),
-      .test_mode  (counters_test_mode),
-      .out_data   (counters_out_data),
-      .out_clk    (counters_out_clk),
-      .out_frame  (counters_out_frame)
+      .test_mode  (counters_test_mode)
   );
 
   // wire up the signals of LED select module
@@ -124,9 +118,9 @@ module tt_um_hoene_smart_led_digital (
   assign uio_out[1:0] = protocol_state;
 
   tt_um_hoene_protocol user_protocol (
-      .in_data    (counters_out_data),
-      .in_clk     (counters_out_clk),
-      .in_frame   (counters_out_frame),
+      .in_data    (manchester_decoder_out_data),
+      .in_clk     (manchester_decoder_out_clk),
+      .in_frame   (framing_out_frame),
       .rst_n      (rst_n),
       .clk        (clk),
       .in0selected(input_selector_in0selected),
@@ -143,7 +137,7 @@ module tt_um_hoene_smart_led_digital (
   wire [29:0] serial2parallel_data;
 
   tt_um_hoene_serial2parallel user_serial2parallel (
-      .in_data    (counters_out_data),
+      .in_data    (protocol_out_data),
       .in_clk     (protocol_out_led_clk),
       .store      (protocol_pwm_set && !framing_out_frame),
       .rst_n      (rst_n),

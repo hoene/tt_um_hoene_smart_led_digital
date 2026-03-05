@@ -147,8 +147,6 @@ module tb ();
   reg counters_in_frame;
   wire [4:0] counters_bits;
   wire counters_test_mode;
-  wire counters_out_data;
-  wire counters_out_clk;
 
   tt_um_hoene_protocol_counters user_protocol_counters (
       .in_clk     (counters_in_clk),
@@ -156,9 +154,7 @@ module tb ();
       .in_frame   (counters_in_frame),
       .clk        (clk),
       .bit_counter(counters_bits),
-      .test_mode  (counters_test_mode),
-      .out_data   (counters_out_data),
-      .out_clk    (counters_out_clk)
+      .test_mode  (counters_test_mode)
   );
 
   // wire up the signals of protocol parity module
