@@ -5,7 +5,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 
-BIT_LENGTH = 22  # must match the value in manchester_decoder.v
+BIT_LENGTH = 24  # must match the value in manchester_decoder.v
 
 
 @cocotb.test()
@@ -22,6 +22,7 @@ async def test_manchester_encoder(dut):
     dut.rst_n.value = 0
     dut.manchester_encoder_in_data.value = 0
     dut.manchester_encoder_in_clk.value = 0
+    dut.manchester_encoder_in_error.value = 0
     dut.manchester_encoder_in_pulsewidth.value = BIT_LENGTH
 
     await ClockCycles(dut.clk, 2)
@@ -36,10 +37,9 @@ async def test_manchester_encoder(dut):
         dut.rst_n.value = 1
         await ClockCycles(dut.clk, 2)
 
-        print(i)
         # check output signals
         assert dut.manchester_encoder_out_data.value == 0
-        assert dut.manchester_encoder_out_enable.value == 0
+        assert dut.manchester_encoder_out_enable.value == 1
 
         # start
         dut._log.debug("first bit 1")
@@ -49,12 +49,12 @@ async def test_manchester_encoder(dut):
         dut.manchester_encoder_in_clk.value = 0
 
         # check output signals
-        for i in range(0, BIT_LENGTH // 2 + 1):
+        for j in range(0, BIT_LENGTH // 2 + 1):
             await ClockCycles(dut.clk, 1)
             assert dut.manchester_encoder_out_data.value == 1
             assert dut.manchester_encoder_out_enable.value == 1
 
-        for i in range(0, BIT_LENGTH):
+        for j in range(0, BIT_LENGTH):
             await ClockCycles(dut.clk, 1)
             assert dut.manchester_encoder_out_data.value == 0
             assert dut.manchester_encoder_out_enable.value == 1

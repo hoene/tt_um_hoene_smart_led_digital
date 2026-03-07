@@ -27,3 +27,6 @@ RUN umask 022 && \
 
 # Install LibreLane
 RUN /ttsetup/venv/bin/pip install librelane==3.0.0.dev44
+
+# My tools
+RUN /ttsetup/venv/bin/pip install black

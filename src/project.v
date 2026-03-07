@@ -78,18 +78,14 @@ module tt_um_hoene_smart_led_digital (
   // wire up the signals of protocol insync module
   wire framing_out_frame;
   assign uo_out[5] = framing_out_frame;
-  wire framing_out_clk;
-  wire framing_out_data;
-
+  
   tt_um_hoene_framing user_framing (
       .in_data  (manchester_decoder_out_data),
       .in_clk   (manchester_decoder_out_clk),
       .in_error (manchester_decoder_out_error),
       .rst_n    (rst_n),
       .clk      (clk),
-      .out_frame(framing_out_frame),
-      .out_data (framing_out_data),
-      .out_clk  (framing_out_clk)
+      .out_frame(framing_out_frame)
   );
 
   // wire up the signals of protocol counters module
@@ -174,6 +170,7 @@ module tt_um_hoene_smart_led_digital (
       .in_data      (protocol_out_data),
       .in_clk       (protocol_out_clk),
       .in_pulsewidth(manchester_decoder_out_pulsewidth),
+      .in_error     (manchester_decoder_out_error),
       .rst_n        (rst_n),
       .clk          (clk),
       .out_data     (dout_data),

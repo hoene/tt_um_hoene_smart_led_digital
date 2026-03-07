@@ -17,7 +17,9 @@
       "extensions": [
         "mshr-h.veriloghdl",
         "surfer-project.surfer",
-        "ms-python.black-formatter"
+        "ms-python.black-formatter",
+        "esbenp.prettier-vscode",
+        "bmpenuelas.systemverilog-formatter-vscode"
       ]
     }
   },

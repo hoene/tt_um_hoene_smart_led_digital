@@ -38,7 +38,27 @@ VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
 # List test modules to run, separated by commas and without the .py suffix:
-COCOTB_TEST_MODULES = test_single_chip # test_single_chip #,test_led_pwm,test_serial2parallel,test_manchester_encoder,test_input_selector,test_low_pass_filter,test_manchester_decoder_init,test_manchester_decoder_running,test_framing,test_counters,test_protocol_din,test_protocol_bin
+COCOTB_TEST_MODULES = $\
+test_system_input_selector,$\
+test_system_manchester_encoder,$\
+test_system_framing,$\
+test_system_low_pass_filter,$\
+test_system_manchester_decoder,$\
+test_system_protocol_bin,$\
+test_system_protocol_din,$\
+test_system_serial2parallel,$\
+test_manchester_encoder,$\
+test_input_selector,$\
+test_low_pass_filter,$\
+test_manchester_decoder_init,$\
+test_manchester_decoder_running,$\
+test_framing,$\
+test_counters,$\
+test_protocol_din,$\
+test_protocol_bin,$\
+test_serial2parallel,$\
+test_led_pwm#,$\
+test_system_counters
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

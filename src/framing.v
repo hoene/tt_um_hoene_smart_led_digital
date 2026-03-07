@@ -15,25 +15,23 @@ module tt_um_hoene_framing (
     input rst_n,     // device reset
     input clk,       // global clock
 
-    output reg out_frame,  // bitstream is insync and data is in the frame
-    output reg out_data,  // the data delayed by one
-    output reg out_clk  // the clock delayed by one
+    output reg out_frame  // bitstream is insync and data is in the frame
 );
+  reg last;
+
   always @(posedge clk) begin
 
     if (!rst_n) begin
       out_frame <= 0;
-      out_data  <= 0;
-      out_clk   <= 0;
+      last <= 0;
     end else begin
-      out_clk <= in_clk;
       if (in_error) begin
         out_frame <= 0;
       end
       if (in_clk) begin
-        out_data <= in_data;
+        last <= in_data;
       end
-      if (in_clk && !in_error && out_frame == 0 && out_data == 1 && in_data == 1) begin
+      if (in_clk && !in_error && out_frame == 0 && last == 1 && in_data == 1) begin
         out_frame <= 1;
       end
     end

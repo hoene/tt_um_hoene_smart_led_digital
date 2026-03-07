@@ -11,6 +11,7 @@ module tt_um_hoene_manchester_encoder (
     input            in_data,        // input data
     input            in_clk,         // input clock
     input      [5:0] in_pulsewidth,  // pulse width of the input signal
+    input            in_error,       // Manchester decoder in error
     input            clk,            // global clock
     input            rst_n,          // device reset
     output reg       out_data,       // data output signal
@@ -19,18 +20,21 @@ module tt_um_hoene_manchester_encoder (
 
   reg [4:0] counter;
   reg middle;
+  reg in_error_last;
 
   wire _unused = &{in_pulsewidth[0], 1'b0};
 
   always @(posedge clk) begin
-    // reset
+    in_error_last <= in_error;
+
     if (!rst_n) begin
+      // reset
       out_enable <= 0;
       out_data <= 0;
       counter <= 0;
       middle <= 1;
     end else if (in_clk) begin
-      out_enable <= 1;
+      out_enable <= ~in_error_last;
       out_data <= in_data;  // swap the bit, which is forwarded
       counter <= in_pulsewidth[5:1];  // divide by 2, because we want to forward the clock, which is half the frequency of the data
       middle <= 0;
@@ -40,6 +44,9 @@ module tt_um_hoene_manchester_encoder (
       out_data <= ~out_data;
       counter  <= in_pulsewidth[5:1];
       middle   <= 1;
+      out_enable <= ~in_error_last;
+    end else begin
+      out_enable <= ~in_error_last;
     end
   end
 endmodule

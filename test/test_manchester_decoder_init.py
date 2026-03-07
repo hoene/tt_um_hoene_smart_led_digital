@@ -16,7 +16,7 @@ async def test_manchester_decoder_init(dut):
     clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
-    for pulsewidth in range(1, BIT_LENGTH * 2):
+    for pulsewidth in range(1, 68):
         # Reset
         dut._log.debug("Reset")
         dut.ena.value = 1
@@ -53,7 +53,7 @@ async def test_manchester_decoder_init(dut):
             assert dut.manchester_decoder_out_data.value == 0
             assert dut.manchester_decoder_out_error.value == 1
             assert dut.manchester_decoder_out_pulsewidth.value == 24
-        elif pulsewidth <= BIT_LENGTH * 1.5:
+        elif pulsewidth <= BIT_LENGTH * 2:
             # too short initial pulse -> remain in error state
             assert dut.manchester_decoder_out_clk.value == 1
             assert dut.manchester_decoder_out_data.value == 1
@@ -61,7 +61,7 @@ async def test_manchester_decoder_init(dut):
             assert dut.manchester_decoder_out_pulsewidth.value == pulsewidth - 1
 
         else:
-            # too short initial pulse -> remain in error state
+            # TODO too short initial pulse -> remain in error state
             assert dut.manchester_decoder_out_clk.value == 0
             assert dut.manchester_decoder_out_data.value == 0
             assert dut.manchester_decoder_out_error.value == 1

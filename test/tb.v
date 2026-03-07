@@ -112,8 +112,6 @@ module tb ();
   reg  framing_in_clk;
   reg  framing_in_error;
   wire framing_out_frame;
-  wire framing_out_data;
-  wire framing_out_clk;
 
   tt_um_hoene_framing user_framing (
       .in_data  (framing_in_data),
@@ -121,9 +119,7 @@ module tb ();
       .in_error (framing_in_error),
       .rst_n    (rst_n),
       .clk      (clk),
-      .out_frame(framing_out_frame),
-      .out_data (framing_out_data),
-      .out_clk  (framing_out_clk)
+      .out_frame(framing_out_frame)
   );
 
   // wire up the signals of protocol serial2parallel module
@@ -147,6 +143,9 @@ module tb ();
   reg counters_in_frame;
   wire [4:0] counters_bits;
   wire counters_test_mode;
+
+  wire _unused = &{counters_bits, 1'b0};
+
 
   tt_um_hoene_protocol_counters user_protocol_counters (
       .in_clk     (counters_in_clk),
@@ -198,6 +197,7 @@ module tb ();
       .in_data      (manchester_encoder_in_data),
       .in_clk       (manchester_encoder_in_clk),
       .in_pulsewidth(manchester_encoder_in_pulsewidth),
+      .in_error     (manchester_encoder_in_error),
       .clk          (clk),                               // clock
       .rst_n        (rst_n),                             // not reset
       .out_enable   (manchester_encoder_out_enable),

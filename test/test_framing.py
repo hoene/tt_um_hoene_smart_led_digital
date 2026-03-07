@@ -28,8 +28,6 @@ async def test_protocol_framing(dut):
 
         # check output signals
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         # start
         dut._log.debug("Starting")
@@ -38,118 +36,83 @@ async def test_protocol_framing(dut):
 
         # check output signals
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         # zero input
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 1
 
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         # one input
         dut.framing_in_data.value = 1
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 1
 
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 0
 
         # zero input 2
         dut.framing_in_data.value = 0
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 1
 
         # zero input 3
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 1
 
         # one input 2
         dut.framing_in_data.value = 1
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 1
 
         # one input 3
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 0
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         dut.framing_in_data.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 1
-        assert dut.framing_out_data.value == 1
-        assert dut.framing_out_clk.value == 1
 
         # zero input 4
         dut.framing_in_data.value = 0
         dut.framing_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 1
-        assert dut.framing_out_clk.value == 0
 
         dut.framing_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
         assert dut.framing_out_frame.value == 1
-        assert dut.framing_out_data.value == 0
-        assert dut.framing_out_clk.value == 1
 
         if loops == 2:
             # in_error
             dut.framing_in_error.value = 1
             await ClockCycles(dut.clk, 2)
             assert dut.framing_out_frame.value == 0
-            assert dut.framing_out_data.value == 0
-            assert dut.framing_out_clk.value == 0

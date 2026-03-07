@@ -26,8 +26,6 @@ async def test_counters(dut):
     # check output signals
     assert dut.counters_bits.value == 0
     assert dut.counters_test_mode.value == 0
-    assert dut.counters_out_clk.value == 0
-    assert dut.counters_out_data.value == 0
 
     # start
     dut._log.debug("Starting ")
@@ -37,14 +35,10 @@ async def test_counters(dut):
     for i in range(1, 32):
         dut.counters_in_clk.value = 1
         await ClockCycles(dut.clk, 1)
-        assert dut.counters_out_clk.value == 0
-        assert dut.counters_out_data.value == 0
 
         dut.counters_in_clk.value = 0
         await ClockCycles(dut.clk, 1)
 
-        assert dut.counters_out_clk.value == 1
-        assert dut.counters_out_data.value == 0
         assert dut.counters_bits.value == i
         assert dut.counters_test_mode.value == 0
 
@@ -53,11 +47,8 @@ async def test_counters(dut):
             dut.counters_in_clk.value = 1
             dut.counters_in_data.value = (j + i) & 1
             await ClockCycles(dut.clk, 1)
-            assert dut.counters_out_clk.value == 0
             dut.counters_in_clk.value = 0
             await ClockCycles(dut.clk, 1)
-            assert dut.counters_out_clk.value == 1
-            assert dut.counters_out_data.value == (j + i) & 1
             assert dut.counters_bits.value == i
             assert dut.counters_test_mode.value == 0
 

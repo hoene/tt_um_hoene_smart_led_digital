@@ -100,6 +100,7 @@ module tt_um_hoene_protocol (
         endcase
       end else begin
         out_led_clk <= 0;
+// TODO        out_data <= in_data;
       end
     end
   end
