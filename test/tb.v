@@ -8,6 +8,8 @@
 `include "counters.v"
 `include "protocol.v"
 `include "manchester_encoder.v"
+`include "ring_osc.v"
+`include "clock.v"
 
 /* This testbench just instantiates the module and makes some convenient wires
    that can be driven / tested by the cocotb test.py.

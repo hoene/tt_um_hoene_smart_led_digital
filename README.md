@@ -17,6 +17,7 @@ The architecture of the digital LED is based on a pipelined signal flow. The fol
 7) Parallel to Serial
 8) Pulse Width Modulator
 9) Manchester encoder
+10) Clock and reset generator
 
 ## 1. Input Selector
 The first module is the "input_selector.v". At startup, is selects either the IN0 input or IN1 input based on whether IN0 shows a toggling signal. The IN0 input must toggle 63 times until this input is selected. After IN1 has toggled 255 times, the input selector does not select IN0 anymore but remains with it IN1 selection. These decisions are made only once after reset.
@@ -130,11 +131,12 @@ The Smart LED has the following input and output signals:
 | ---- | --- | ------ | ---- | -------- |
 | in | 0 | input selector | IN0 | primary input data signal |
 | in | 1 | input selector | IN1 | backup input data signal |
-| in | 2-7 | - | - |
+| in | 2 | clock | NRESET_IN | initial nreset input |
+| in | 3-7 | clock | DIVIDER | divides the internal 504 Mhz clock by this value |
 | out | 0 | input selector | IN0SELECTED | high if input 0 is selected |
 | out | 1 | low pass filter | OUT | seelcted, low pass filtered signal |
-| out | 2 | manchester decoder | data | the decoded data bit |
-| out | 3 | manchester decoder | clk | the clock output |
+| out | 2 | clock | clock_output | a ring oscillator |
+| out | 3 | clock | nreset_out | the delayed reset output |
 | out | 4 | manchester decoder | error | error state |
 | out | 5 | framing | frame | data frame detected |
 | out | 6 | counters | test_mode | test mode active |

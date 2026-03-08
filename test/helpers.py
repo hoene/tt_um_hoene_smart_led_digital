@@ -67,10 +67,12 @@ class Helpers:
 
     def data_in(self):
         # Read the data from the manchester decoder and log it
-        val = self.dut.uo_out.value
-        if val[3] == Logic(1) and val[4] == Logic(0):
+        if (
+            self.dut.user_project.manchester_decoder_out_clk.value == 1
+            and self.dut.user_project.manchester_decoder_out_error.value == 0
+        ):
             self.decoder_buffer.append(
-                1 if val[2] == Logic(1) else 0 if val[2] == Logic("0") else "X"
+                self.dut.user_project.manchester_decoder_out_data.value
             )
 
     def pwm_decode(self):

@@ -27,6 +27,8 @@ project:
     - "serial2parallel.v"
     - "led_pwm.v"
     - "manchester_encoder.v"
+    - "ring_osc.v"
+    - "clock.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
@@ -34,18 +36,18 @@ pinout:
   # Inputs
   ui[0]: "IN0"
   ui[1]: "IN1"
-  ui[2]: ""
-  ui[3]: ""
-  ui[4]: ""
-  ui[5]: ""
-  ui[6]: ""
-  ui[7]: ""
+  ui[2]: "NRESET_IN"
+  ui[3]: "CLOCK_DIV0"
+  ui[4]: "CLOCK_DIV1"
+  ui[5]: "CLOCK_DIV2"
+  ui[6]: "CLOCK_DIV3"
+  ui[7]: "CLOCK_DIV4"
 
   # Outputs
   uo[0]: "IN0SELECTED"
   uo[1]: "LOW_PASS_OUT"
-  uo[2]: "DECODER_DATA"
-  uo[3]: "DECODER_CLK"
+  uo[2]: "CLOCK"
+  uo[3]: "NRESET_OUT"
   uo[4]: "DECODER_ERROR"
   uo[5]: "FRAME"
   uo[6]: "TEST_MODE"

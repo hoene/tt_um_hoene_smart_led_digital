@@ -20,7 +20,7 @@ module tt_um_hoene_smart_led_digital (
   assign uio_oe[6:0] = 7'b1111111;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ui_in[7:2], uio_in, ena, 1'b0};
+  wire _unused = &{uio_in, 1'b0};
 
   // wire up the signals of input_selector
 
@@ -57,9 +57,7 @@ module tt_um_hoene_smart_led_digital (
 
   // wire up the signals of Manchester decoder
   wire manchester_decoder_out_data;
-  assign uo_out[2] = manchester_decoder_out_data;
   wire manchester_decoder_out_clk;
-  assign uo_out[3] = manchester_decoder_out_clk;
   wire manchester_decoder_out_error;
   assign uo_out[4] = manchester_decoder_out_error;
   wire [5:0] manchester_decoder_out_pulsewidth;
@@ -78,7 +76,7 @@ module tt_um_hoene_smart_led_digital (
   // wire up the signals of protocol insync module
   wire framing_out_frame;
   assign uo_out[5] = framing_out_frame;
-  
+
   tt_um_hoene_framing user_framing (
       .in_data  (manchester_decoder_out_data),
       .in_clk   (manchester_decoder_out_clk),
@@ -176,5 +174,24 @@ module tt_um_hoene_smart_led_digital (
       .out_data     (dout_data),
       .out_enable   (dout_enable)
   );
+
+  // wire up the signals of pulse width modulator
+  wire [4:0] clock_divider;
+  assign clock_divider = ui_in[7:3];
+  wire clock_nreset_in;
+  assign clock_nreset_in = ui_in[2];
+  wire clock_out;
+  assign uo_out[2] = clock_out;
+  wire clock_nreset_out;
+  assign uo_out[3] = clock_nreset_out;
+
+  tt_um_hoene_clock user_clock (
+      .divider   (clock_divider),
+      .nreset_in (clock_nreset_in),
+      .ena       (ena),
+      .nreset_out(clock_nreset_out),
+      .clock     (clock_out)
+  );
+
 
 endmodule
